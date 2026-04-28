@@ -1,255 +1,342 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body{font-family:Arial,sans-serif;margin:0;background:#f6f7fb;color:#172033}
-    .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
-    .card{background:white;border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.07);padding:18px;margin-bottom:16px}
-    h2,h3{margin-top:0}
-    label{font-size:13px;font-weight:bold;display:block;margin-top:10px}
-    input,select,button{padding:10px;border:1px solid #d8dde8;border-radius:8px;font-size:14px}
-    button{background:#2563eb;color:white;border:none;cursor:pointer;font-weight:bold}
-    button.secondary{background:#64748b}
-    button.danger{background:#dc2626}
-    table{width:100%;border-collapse:collapse;margin-top:12px;background:white}
-    th,td{border-bottom:1px solid #e5e7eb;text-align:left;padding:8px;font-size:13px}
-    th{background:#f1f5f9}
-    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-    .muted{color:#64748b;font-size:13px}
-    .row-actions{display:flex;gap:8px;flex-wrap:wrap}
-    .hide{display:none}
-    @media(max-width:800px){.grid{grid-template-columns:1fr}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Salary System</title>
+
+<style>
+body{margin:0;font-family:Arial;background:#f4f6fb;color:#0f172a}
+.top{background:#2563eb;color:#fff;padding:18px;border-radius:0 0 22px 22px}
+.wrap{max-width:980px;margin:16px auto;padding:0 12px}
+.card{background:#fff;border-radius:18px;box-shadow:0 4px 18px rgba(0,0,0,.08);padding:16px;margin-bottom:14px}
+label{font-size:13px;font-weight:bold;margin:10px 0 5px;display:block}
+input,select,button{width:100%;padding:12px;border:1px solid #dbe3ef;border-radius:12px;font-size:15px}
+button{border:0;background:#2563eb;color:#fff;font-weight:bold;margin-top:10px}
+.secondary{background:#64748b}
+.danger{background:#dc2626}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.msg{padding:10px;border-radius:12px;margin:10px 0;font-size:14px;display:none}
+.ok{display:block;background:#dcfce7;color:#166534}
+.err{display:block;background:#fee2e2;color:#991b1b}
+.muted{color:#64748b;font-size:13px}
+.emp{display:grid;grid-template-columns:1fr 95px;gap:10px;align-items:center;border-bottom:1px solid #e5e7eb;padding:10px 0}
+.hide{display:none}
+.row{display:flex;gap:10px}
+.row button{flex:1}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:left}
+th{background:#f1f5f9}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.card{padding:14px}}
+</style>
 </head>
+
 <body>
+
+<div class="top">
+  <h1>Online Salary System</h1>
+  <p>Principal: Absent days only · Admin: Generate and approve salary</p>
+</div>
+
 <div class="wrap">
-  <div class="card">
-    <h2>Online Salary System</h2>
-    <div id="userInfo" class="muted">Loading...</div>
-  </div>
 
-  <div class="card">
-    <div class="grid">
-      <div><label>Year</label><input id="year" type="number"></div>
-      <div><label>Month</label><select id="month"></select></div>
-      <div><label>Campus / School</label><input id="campus" placeholder="Campus name"></div>
-      <div style="align-self:end"><button onclick="loadEmployees()">Load Employees</button></div>
-    </div>
-  </div>
+<div class="card">
+<h2>Login / User</h2>
 
-  <div class="card">
-    <h3>Principal: Absent Days Entry Only</h3>
-    <div class="muted">Principal صرف absent days ڀريندو. ٻيا salary rules Admin ۽ system handle ڪندا.</div>
-    <table id="empTable">
-      <thead>
-        <tr>
-          <th>Employee ID</th>
-          <th>Name</th>
-          <th>Basic Salary</th>
-          <th>Absent Days</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <div style="margin-top:12px">
-      <button onclick="saveAbsentDays()">Save Absent Days</button>
-    </div>
-  </div>
+<div class="grid">
+<div>
+<label>Email</label>
+<input id="email" type="email" placeholder="principal@gmail.com">
+</div>
 
-  <div class="card">
-    <h3>Principal: Add New Employee</h3>
-    <div class="muted">نئون ملازم سڌو Employee_Master ۾ ويندو، پر Principal طرفان add ٿيل ملازم Admin approval تائين salary ۾ شامل نه ٿيندو.</div>
-    <div class="grid">
-      <div><label>Name</label><input id="newName"></div>
-      <div><label>Basic Salary</label><input id="newBasic" type="number"></div>
-      <div><label>Bank Account Title</label><input id="newBankTitle"></div>
-      <div><label>Bank Account No</label><input id="newBankNo"></div>
-      <div><label>Designation</label><input id="newDesignation"></div>
-      <div><label>CNIC</label><input id="newCnic"></div>
-      <div><label>Joining Date</label><input id="newJoining" type="date"></div>
-      <div style="align-self:end"><button class="secondary" onclick="addEmployee()">Add Employee</button></div>
-    </div>
-  </div>
+<div>
+<label>Year</label>
+<input id="year" type="number" value="2026">
+</div>
 
-  <div id="adminPanel" class="card hide">
-    <h3>Admin: Generate / Approve Salary</h3>
-    <div class="row-actions">
-      <button onclick="generateSalary()">Generate Salary</button>
-      <button class="secondary" onclick="viewSalary()">View Salary</button>
-      <button class="danger" onclick="approveSalary()">Approve Salary</button>
-      <button class="secondary" onclick="loadPendingEmployees()">Pending Employees</button>
-    </div>
+<div>
+<label>Month</label>
+<select id="month">
+<option>JAN</option><option>FEB</option><option>MAR</option><option>APR</option>
+<option>MAY</option><option>JUN</option><option>JUL</option><option>AUG</option>
+<option>SEP</option><option>OCT</option><option>NOV</option><option>DEC</option>
+</select>
+</div>
+</div>
 
-    <h4>Salary Rows</h4>
-    <table id="salaryTable">
-      <thead>
-        <tr>
-          <th>ID</th><th>Name</th><th>Basic</th><th>Absent</th><th>Deduction</th><th>Net Pay</th><th>Status</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+<label>Campus / School</label>
+<input id="campus" placeholder="Hassan Turk">
 
-    <h4>Pending New Employees</h4>
-    <table id="pendingTable">
-      <thead>
-        <tr><th>ID</th><th>Name</th><th>Campus</th><th>Basic</th><th>Created By</th><th>Action</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+<button onclick="login()">Continue</button>
+
+<div id="msg" class="msg"></div>
+<div id="userInfo" class="muted"></div>
+</div>
+
+<div id="principalPanel" class="hide">
+
+<div class="card">
+<h2>Absent Days Entry</h2>
+<p class="muted">Principal صرف absent days ڀريندو.</p>
+<button onclick="loadEmployees()">Load Employees</button>
+<div id="employeeList"></div>
+<button onclick="saveAbsentDays()">Save Absent Days</button>
+</div>
+
+<div class="card">
+<h2>Add New Employee</h2>
+<p class="muted">نئون ملازم Employee_Master ۾ ويندو، approval کان پوءِ salary ۾ شامل ٿيندو.</p>
+
+<div class="grid">
+<div><label>Name</label><input id="newName"></div>
+<div><label>Basic Salary</label><input id="newBasic" type="number"></div>
+<div><label>Designation</label><input id="newDesignation"></div>
+<div><label>Bank Account Title</label><input id="newBankTitle"></div>
+<div><label>Bank Account No</label><input id="newBankNo"></div>
+<div><label>CNIC</label><input id="newCnic"></div>
+<div><label>Joining Date</label><input id="newJoining" type="date"></div>
+</div>
+
+<button class="secondary" onclick="addEmployee()">Add Employee</button>
+</div>
+
+</div>
+
+<div id="adminPanel" class="card hide">
+<h2>Admin Panel</h2>
+
+<div class="row">
+<button onclick="generateSalary()">Generate</button>
+<button class="secondary" onclick="viewSalary()">View</button>
+<button class="danger" onclick="approveSalary()">Approve</button>
+</div>
+
+<h3>Salary Rows</h3>
+<div style="overflow:auto">
+<table>
+<thead>
+<tr>
+<th>ID</th><th>Name</th><th>Basic</th><th>Absent</th><th>Net Pay</th><th>Status</th>
+</tr>
+</thead>
+<tbody id="salaryRows"></tbody>
+</table>
+</div>
+
+<h3>Pending Employees</h3>
+<button class="secondary" onclick="loadPending()">Load Pending</button>
+
+<div style="overflow:auto">
+<table>
+<thead>
+<tr>
+<th>ID</th><th>Name</th><th>Campus</th><th>Basic</th><th>Action</th>
+</tr>
+</thead>
+<tbody id="pendingRows"></tbody>
+</table>
+</div>
+
+</div>
+
 </div>
 
 <script>
-let CTX = {};
+const API_URL = "https://script.google.com/macros/s/AKfycbwCecxnUiwEf2euPigIHnu-g8ke_e3etQ2xdE4_NtbM2oqROcoiQIwbz1DLZKqVcunMXA/exec";
+
+let USER = null;
 let EMPLOYEES = [];
 
-function init(){
-  google.script.run.withSuccessHandler(ctx=>{
-    CTX = ctx;
-    document.getElementById('userInfo').textContent = `${ctx.email} | Role: ${ctx.role} | Campus: ${ctx.campus || 'All'}`;
-    document.getElementById('year').value = ctx.currentYear;
-    document.getElementById('month').innerHTML = ctx.months.map(m=>`<option>${m}</option>`).join('');
-    if(ctx.campus) document.getElementById('campus').value = ctx.campus;
-    if(ctx.role === 'ADMIN') document.getElementById('adminPanel').classList.remove('hide');
-  }).getAppContext();
+function show(text, type="ok") {
+  let box = document.getElementById("msg");
+  box.className = "msg " + type;
+  box.textContent = text;
 }
 
-function getFilters(){
-  return {
-    year: document.getElementById('year').value,
-    month: document.getElementById('month').value,
-    campus: document.getElementById('campus').value.trim()
-  };
-}
-
-function loadEmployees(){
-  const f = getFilters();
-  google.script.run.withSuccessHandler(rows=>{
-    EMPLOYEES = rows;
-    const body = document.querySelector('#empTable tbody');
-    body.innerHTML = rows.map(r=>`
-      <tr>
-        <td>${r.Employee_ID}</td>
-        <td>${r.Employee_Name}</td>
-        <td>${r.Basic_Salary}</td>
-        <td><input data-id="${r.Employee_ID}" data-name="${r.Employee_Name}" class="abs" type="number" min="0" value="0" style="width:100px"></td>
-      </tr>`).join('');
-  }).withFailureHandler(showError).getEmployees(f.campus);
-}
-
-function saveAbsentDays(){
-  const f = getFilters();
-  const entries = EMPLOYEES.map(r=>{
-    const abs = document.querySelector(`.abs[data-id="${r.Employee_ID}"]`);
-    return {employeeId:r.Employee_ID, employeeName:r.Employee_Name, absentDays:abs.value};
+async function api(action, payload = {}) {
+  let response = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ action, ...payload })
   });
 
-  google.script.run
-    .withSuccessHandler(res=>alert(`Absent days saved: ${res.saved}`))
-    .withFailureHandler(showError)
-    .saveAbsentDays({...f, entries});
-}
+  let text = await response.text();
+  let data = JSON.parse(text);
 
-function addEmployee(){
-  const f = getFilters();
-  const payload = {
-    campus: f.campus,
-    employeeName: document.getElementById('newName').value.trim(),
-    basicSalary: document.getElementById('newBasic').value,
-    bankAccountTitle: document.getElementById('newBankTitle').value.trim(),
-    bankAccountNo: document.getElementById('newBankNo').value.trim(),
-    designation: document.getElementById('newDesignation').value.trim(),
-    cnic: document.getElementById('newCnic').value.trim(),
-    joiningDate: document.getElementById('newJoining').value
-  };
-
-  if(!payload.employeeName || !payload.basicSalary || !payload.campus){
-    alert('Name, Basic Salary ۽ Campus لازمي آهن.');
-    return;
+  if (!data.ok) {
+    throw new Error(data.error || "Unknown error");
   }
 
-  google.script.run
-    .withSuccessHandler(res=>{
-      alert(`Employee added in Employee_Master: ${res.employeeId}. Status: ${res.approvalStatus}`);
-      document.getElementById('newName').value = '';
-      document.getElementById('newBasic').value = '';
-      document.getElementById('newBankTitle').value = '';
-      document.getElementById('newBankNo').value = '';
-      document.getElementById('newDesignation').value = '';
-      document.getElementById('newCnic').value = '';
-      document.getElementById('newJoining').value = '';
-    })
-    .withFailureHandler(showError)
-    .addEmployee(payload);
+  return data;
 }
 
-function generateSalary(){
-  const f = getFilters();
-  google.script.run
-    .withSuccessHandler(res=>{ alert(`Generated ${res.generated} salary rows`); viewSalary(); })
-    .withFailureHandler(showError)
-    .generateSalary(f.year, f.month, f.campus);
+function filters() {
+  return {
+    email: document.getElementById("email").value.trim(),
+    year: Number(document.getElementById("year").value),
+    month: document.getElementById("month").value,
+    campus: document.getElementById("campus").value.trim()
+  };
 }
 
-function viewSalary(){
-  const f = getFilters();
-  google.script.run.withSuccessHandler(rows=>{
-    const body = document.querySelector('#salaryTable tbody');
-    body.innerHTML = rows.map(r=>`
+async function login() {
+  try {
+    let data = await api("login", filters());
+
+    USER = data.user;
+
+    document.getElementById("userInfo").textContent =
+      USER.email + " | " + USER.role + " | " + (USER.campus || "All");
+
+    document.getElementById("principalPanel").classList.remove("hide");
+
+    if (USER.role === "ADMIN") {
+      document.getElementById("adminPanel").classList.remove("hide");
+    }
+
+    if (USER.role === "PRINCIPAL" && USER.campus) {
+      document.getElementById("campus").value = USER.campus;
+    }
+
+    show("Login successful");
+  } catch (err) {
+    show(err.message, "err");
+  }
+}
+
+async function loadEmployees() {
+  try {
+    let data = await api("getEmployees", filters());
+    EMPLOYEES = data.employees || [];
+
+    document.getElementById("employeeList").innerHTML = EMPLOYEES.map(e => `
+      <div class="emp">
+        <div>
+          <b>${e.Employee_Name}</b><br>
+          <small>${e.Employee_ID} · Basic: ${e.Basic_Salary}</small>
+        </div>
+        <input class="abs" data-id="${e.Employee_ID}" type="number" min="0" value="0">
+      </div>
+    `).join("");
+
+    show("Loaded " + EMPLOYEES.length + " employees");
+  } catch (err) {
+    show(err.message, "err");
+  }
+}
+
+async function saveAbsentDays() {
+  try {
+    let f = filters();
+
+    let entries = EMPLOYEES.map(e => ({
+      employeeId: e.Employee_ID,
+      employeeName: e.Employee_Name,
+      absentDays: document.querySelector(`.abs[data-id="${e.Employee_ID}"]`).value
+    }));
+
+    let data = await api("saveAbsentDays", { ...f, entries });
+
+    show("Saved " + data.saved + " entries");
+  } catch (err) {
+    show(err.message, "err");
+  }
+}
+
+async function addEmployee() {
+  try {
+    let data = await api("addEmployee", {
+      ...filters(),
+      employeeName: document.getElementById("newName").value.trim(),
+      basicSalary: document.getElementById("newBasic").value,
+      designation: document.getElementById("newDesignation").value,
+      bankAccountTitle: document.getElementById("newBankTitle").value,
+      bankAccountNo: document.getElementById("newBankNo").value,
+      cnic: document.getElementById("newCnic").value,
+      joiningDate: document.getElementById("newJoining").value
+    });
+
+    show("Employee added: " + data.employeeId + " (" + data.approvalStatus + ")");
+  } catch (err) {
+    show(err.message, "err");
+  }
+}
+
+async function generateSalary() {
+  try {
+    let data = await api("generateSalary", filters());
+    show("Generated " + data.generated + " rows");
+    viewSalary();
+  } catch (err) {
+    show(err.message, "err");
+  }
+}
+
+async function viewSalary() {
+  try {
+    let data = await api("getSalaryRows", filters());
+
+    document.getElementById("salaryRows").innerHTML = (data.rows || []).map(r => `
       <tr>
         <td>${r.Employee_ID}</td>
         <td>${r.Employee_Name}</td>
         <td>${r.Basic_Salary}</td>
         <td>${r.Absent_Days}</td>
-        <td>${r.Absent_Deduction}</td>
         <td>${r.Net_Pay}</td>
         <td>${r.Status}</td>
       </tr>
-    `).join('');
-  }).withFailureHandler(showError).getSalaryRows(f.year, f.month, f.campus);
+    `).join("");
+
+    show("Loaded " + data.rows.length + " salary rows");
+  } catch (err) {
+    show(err.message, "err");
+  }
 }
 
-function approveSalary(){
-  const f = getFilters();
-  const remarks = prompt('Remarks optional') || '';
-  google.script.run
-    .withSuccessHandler(res=>alert(`Approved ${res.approved} salary rows`))
-    .withFailureHandler(showError)
-    .approveSalary(f.year, f.month, f.campus, remarks);
+async function approveSalary() {
+  try {
+    let data = await api("approveSalary", {
+      ...filters(),
+      remarks: "Approved from GitHub"
+    });
+
+    show("Approved " + data.approved + " rows");
+  } catch (err) {
+    show(err.message, "err");
+  }
 }
 
-function loadPendingEmployees(){
-  const f = getFilters();
-  google.script.run.withSuccessHandler(rows=>{
-    const body = document.querySelector('#pendingTable tbody');
-    body.innerHTML = rows.map(r=>`
+async function loadPending() {
+  try {
+    let data = await api("getPendingEmployees", filters());
+
+    document.getElementById("pendingRows").innerHTML = (data.rows || []).map(r => `
       <tr>
         <td>${r.Employee_ID}</td>
         <td>${r.Employee_Name}</td>
         <td>${r.Campus}</td>
         <td>${r.Basic_Salary}</td>
-        <td>${r.Created_By}</td>
-        <td><button onclick="approveNewEmployee('${r.Employee_ID}')">Approve</button></td>
+        <td><button onclick="approveEmployee('${r.Employee_ID}')">Approve</button></td>
       </tr>
-    `).join('');
-  }).withFailureHandler(showError).getPendingEmployees(f.campus);
+    `).join("");
+  } catch (err) {
+    show(err.message, "err");
+  }
 }
 
-function approveNewEmployee(id){
-  google.script.run
-    .withSuccessHandler(res=>{ alert(`Approved: ${res.employeeId}`); loadPendingEmployees(); })
-    .withFailureHandler(showError)
-    .approveNewEmployee(id);
-}
+async function approveEmployee(id) {
+  try {
+    let data = await api("approveNewEmployee", {
+      ...filters(),
+      employeeId: id
+    });
 
-function showError(err){
-  alert(err.message || err);
+    show("Approved " + data.employeeId);
+    loadPending();
+  } catch (err) {
+    show(err.message, "err");
+  }
 }
-
-init();
 </script>
+
 </body>
 </html>
