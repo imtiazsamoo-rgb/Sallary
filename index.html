@@ -3,78 +3,281 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monthly Attendance App</title>
+  <title>School Attendance System</title>
   <style>
-    :root { --primary:#2563eb; --green:#16a34a; --red:#dc2626; --orange:#f97316; --bg:#f3f6fb; --card:#fff; --text:#0f172a; --muted:#64748b; --line:#e2e8f0; --soft:#eff6ff; }
-    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
-    .topbar{background:linear-gradient(135deg,var(--primary),#4f46e5);color:white;padding:18px 14px 22px;border-bottom-left-radius:22px;border-bottom-right-radius:22px;position:sticky;top:0;z-index:10;box-shadow:0 6px 18px rgba(37,99,235,.22)}
-    .topbar h1{margin:0;font-size:20px}.topbar p{margin:5px 0 0;font-size:13px;opacity:.92}.wrap{max-width:680px;margin:0 auto;padding:12px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0;box-shadow:0 3px 12px rgba(15,23,42,.06)}
-    .card-title{font-size:16px;font-weight:800;margin:0 0 10px} label{display:block;font-size:13px;color:var(--muted);margin:10px 0 5px;font-weight:700}
-    input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:12px;padding:11px;font-size:15px;background:white;outline:none} textarea{min-height:54px;resize:vertical}
-    input:focus,textarea:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-    button{width:100%;border:0;border-radius:12px;padding:12px;font-size:15px;font-weight:800;color:white;background:var(--primary);cursor:pointer} button:active{transform:scale(.99)}
-    button.secondary{background:#475569} button.green{background:var(--green)} button.red{background:var(--red)} button.orange{background:var(--orange)} button.light{background:var(--soft);color:#1d4ed8;border:1px solid #bfdbfe}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.hidden{display:none!important}.msg{padding:10px 12px;border-radius:12px;margin-top:10px;font-size:14px;display:none}.msg.ok{display:block;background:#dcfce7;color:#166534}.msg.err{display:block;background:#fee2e2;color:#991b1b}.msg.info{display:block;background:#e0f2fe;color:#075985}
-    .employee-card{background:white;border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}.emp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}.emp-name{font-size:16px;font-weight:900;line-height:1.25}.emp-meta{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.5}.badge{font-size:11px;border-radius:999px;padding:5px 8px;background:#f1f5f9;color:#334155;white-space:nowrap;font-weight:800}.att-line{display:grid;grid-template-columns:1fr 105px;gap:10px;align-items:end;margin-top:8px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.approved-box{border-color:#86efac;background:#f0fdf4}.section-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.small{font-size:12px;color:var(--muted);line-height:1.45}.admin-item{border:1px solid var(--line);border-radius:14px;padding:10px;margin:8px 0;background:#fff;font-size:13px;line-height:1.5}.admin-item b{font-size:14px}.link{color:var(--primary);text-decoration:none;font-weight:800;word-break:break-all}.footer-space{height:20px}
-    @media(max-width:420px){.wrap{padding:10px}.card{padding:12px;border-radius:15px}.topbar h1{font-size:18px}.row{grid-template-columns:1fr}.att-line{grid-template-columns:1fr 95px}input,textarea,button{font-size:14px}.actions button{padding:10px 8px;font-size:13px}}
+    :root{
+      --blue:#2457e6;
+      --sky:#12a8e6;
+      --bg:#eef2f7;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e5e7eb;
+      --green:#16a34a;
+      --red:#dc2626;
+      --orange:#f97316;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+    .wrap{max-width:820px;margin:0 auto;padding:14px}
+    .hero{background:linear-gradient(135deg,var(--blue),var(--sky));color:#fff;padding:24px 18px;border-radius:0 0 24px 24px;box-shadow:0 12px 30px rgba(37,99,235,.18);margin-bottom:18px}
+    .hero h1{margin:0 0 6px;font-size:25px;line-height:1.15}
+    .hero p{margin:0;font-size:15px;opacity:.95}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 22px rgba(15,23,42,.06)}
+    .card h2,.card h3{margin:0 0 12px;font-size:20px}
+    .hint{color:var(--muted);font-size:14px;line-height:1.45;margin:0 0 14px}
+    label{display:block;font-weight:700;font-size:14px;margin:12px 0 6px}
+    input,select,textarea{width:100%;border:1px solid var(--border);border-radius:13px;padding:12px 13px;font-size:16px;background:#fff;outline:none}
+    textarea{min-height:70px;resize:vertical}
+    input:focus,textarea:focus,select:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(96,165,250,.18)}
+    button{width:100%;border:0;border-radius:14px;padding:13px 14px;font-size:16px;font-weight:700;color:#fff;background:var(--blue);cursor:pointer}
+    button:active{transform:scale(.99)}
+    .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .btn-green{background:var(--green)}
+    .btn-red{background:var(--red)}
+    .btn-gray{background:#475569}
+    .btn-orange{background:var(--orange)}
+    .topbar{display:none;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+    .badge{display:inline-block;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;background:#e0f2fe;color:#075985}
+    .admin-badge{background:#fef3c7;color:#92400e}
+    .section-title{font-size:18px;font-weight:800;margin:18px 2px 8px}
+    .employee-card{padding:14px;border-radius:17px;background:#fff;border:1px solid var(--border);box-shadow:0 6px 16px rgba(15,23,42,.05);margin:10px 0}
+    .emp-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:9px}
+    .emp-name{font-size:18px;font-weight:800;line-height:1.2}
+    .emp-meta{font-size:13px;color:var(--muted);line-height:1.45;margin-top:3px}
+    .status{font-size:12px;font-weight:800;border-radius:999px;padding:6px 10px;background:#ffedd5;color:#9a3412;white-space:nowrap}
+    .status.ok{background:#dcfce7;color:#166534}
+    .compact-line{display:grid;grid-template-columns:100px 1fr;gap:10px;align-items:end;margin-top:10px}
+    .compact-line label{margin:0 0 5px;font-size:13px}
+    .small-input input{padding:11px 10px;text-align:center}
+    .submit-card{position:sticky;bottom:8px;z-index:9;border:1px solid #bfdbfe}
+    .tabs{display:none;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+    .tab{background:#e2e8f0;color:#0f172a;padding:11px;border-radius:14px;font-weight:800;text-align:center;cursor:pointer}
+    .tab.active{background:var(--blue);color:#fff}
+    .hidden{display:none!important}
+    .toast{position:fixed;left:12px;right:12px;bottom:18px;background:#0f172a;color:#fff;padding:14px 16px;border-radius:14px;box-shadow:0 12px 35px rgba(0,0,0,.25);display:none;z-index:1000;font-size:15px}
+    .report-table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:14px;overflow:hidden}
+    .report-table th{background:#2563eb;color:#fff;text-align:left;padding:10px}
+    .report-table td{border-bottom:1px solid var(--border);padding:9px;color:#1f2937}
+    .scroll-x{overflow-x:auto}
+    @media (min-width:720px){.wrap{padding:18px}.hero{padding:28px 24px}.hero h1{font-size:30px}.compact-line{grid-template-columns:120px 1fr}.employee-card{padding:16px}}
   </style>
 </head>
 <body>
-  <div class="topbar"><h1>Monthly Attendance App</h1><p id="topSubtitle">School login, attendance, register image and admin panel.</p></div>
   <div class="wrap">
-    <div id="loginCard" class="card">
-      <h2 class="card-title">Login</h2>
-      <label>School Code</label><input id="schoolCode" placeholder="Enter school code" autocomplete="username" />
-      <label>Username</label><input id="username" placeholder="Enter username" />
-      <label>Password</label><input id="password" type="password" placeholder="Enter password" autocomplete="current-password" />
-      <button style="margin-top:14px" onclick="login()">Login</button><div id="loginMsg" class="msg"></div>
-      <p class="small">Admin users can view all schools. School users can only submit their own school attendance.</p>
+    <div class="hero">
+      <h1>School Attendance System</h1>
+      <p>Monthly attendance, employee requests, and admin reports.</p>
     </div>
+
+    <div id="loginCard" class="card">
+      <h2>Login</h2>
+      <p class="hint">Use your school login. Admin tools will appear only for Admin users.</p>
+      <label>School Code</label>
+      <input id="schoolCode" placeholder="Enter school code" autocomplete="off" />
+      <label>Username</label>
+      <input id="username" placeholder="Enter username" autocomplete="username" />
+      <label>Password</label>
+      <input id="password" type="password" placeholder="Enter password" autocomplete="current-password" />
+      <button style="margin-top:14px" onclick="login()">Login</button>
+    </div>
+
     <div id="app" class="hidden">
-      <div class="card"><div class="emp-head"><div><div class="card-title" id="welcomeText">Welcome</div><div class="small" id="roleText"></div></div><button class="secondary" style="width:88px;padding:10px" onclick="logout()">Logout</button></div></div>
-      <div id="schoolPanel">
-        <div class="card"><h2 class="card-title">Attendance Details</h2><label>Attendance Month</label><input type="month" id="month" /><label>Attendance Register Image</label><input type="file" id="image" accept="image/*" /><p class="small">Upload one clear attendance register image for the whole school. It will be saved in Google Drive folder “Montly Attendance”.</p></div>
-        <div class="card"><h2 class="card-title">Employee Attendance</h2><div id="employees"></div><div id="employeeMsg" class="msg"></div></div>
-        <div class="card"><button class="green" onclick="submitAll()">Submit Attendance</button><div id="submitMsg" class="msg"></div></div>
-        <div class="card"><h2 class="card-title">Add New Employee Request</h2>
-          <label>Employee Name</label><input id="empName" placeholder="Employee name" />
-          <label>Father Name</label><input id="empFather" placeholder="Father name" />
-          <div class="row"><div><label>CNIC</label><input id="empCnic" placeholder="CNIC" /></div><div><label>Mobile</label><input id="empMobile" placeholder="Mobile number" /></div></div>
-          <label>Campus</label><input id="empCampus" placeholder="Campus name" />
-          <label>Bank Name</label><input id="empBank" placeholder="Bank name" />
-          <button style="margin-top:14px" onclick="addEmployee()">Submit New Employee Request</button><div id="addMsg" class="msg"></div>
+      <div class="topbar" id="topbar">
+        <div>
+          <span id="userBadge" class="badge"></span>
+          <span id="roleBadge" class="badge admin-badge"></span>
+        </div>
+        <button class="btn-gray" style="width:auto;padding:9px 13px;font-size:14px" onclick="logout()">Logout</button>
+      </div>
+
+      <div id="tabs" class="tabs">
+        <div id="tabAttendance" class="tab active" onclick="showTab('attendance')">Attendance</div>
+        <div id="tabAdmin" class="tab" onclick="showTab('admin')">Admin Panel</div>
+      </div>
+
+      <div id="attendanceView">
+        <div class="card">
+          <h3>Monthly Attendance</h3>
+          <p class="hint">Select month, upload one register image for the whole school, then approve employees.</p>
+          <label>Attendance Month</label>
+          <input type="month" id="attendanceMonth" />
+          <label>Attendance Register Image</label>
+          <input type="file" id="registerImage" accept="image/*" />
+        </div>
+
+        <div class="section-title">Employees</div>
+        <div id="employeesBox"></div>
+
+        <div class="card submit-card">
+          <button onclick="submitAttendance()">Submit Attendance</button>
+        </div>
+
+        <div class="card">
+          <h3>Add New Employee</h3>
+          <p class="hint">This request will go to Admin for approval.</p>
+          <label>Employee Name</label><input id="newName" placeholder="Employee name" />
+          <label>Father Name</label><input id="newFather" placeholder="Father name" />
+          <label>CNIC</label><input id="newCnic" placeholder="CNIC" />
+          <label>Mobile Number</label><input id="newMobile" placeholder="Mobile number" />
+          <label>Campus</label><input id="newCampus" placeholder="Campus" />
+          <label>Bank Name</label><input id="newBank" placeholder="Bank name" />
+          <button style="margin-top:14px" onclick="addEmployeeRequest()">Submit Employee Request</button>
         </div>
       </div>
-      <div id="adminPanel" class="hidden">
-        <div class="section-tabs"><button class="light" onclick="showAdminSection('dashboard')">Dashboard</button><button class="light" onclick="showAdminSection('requests')">New Requests</button></div>
-        <div id="adminDashboardCard" class="card"><h2 class="card-title">Admin Dashboard</h2><div class="row"><div><label>Month Filter</label><input type="month" id="adminMonth" /></div><div><label>School Code Filter</label><input id="adminSchoolFilter" placeholder="Optional" /></div></div><div class="actions"><button onclick="loadAdminDashboard()">Load Report</button><button class="green" onclick="downloadCSV()">Download CSV</button></div><div id="adminReport"></div><div id="adminMsg" class="msg"></div></div>
-        <div id="adminRequestsCard" class="card hidden"><h2 class="card-title">New Employee Requests</h2><button onclick="loadNewRequests()">Refresh Requests</button><div id="requestList"></div><div id="requestMsg" class="msg"></div></div>
-      </div><div class="footer-space"></div>
+
+      <div id="adminView" class="hidden">
+        <div class="card">
+          <h3>Admin Dashboard</h3>
+          <p class="hint">Admin can view all schools, monthly reports, and employee requests.</p>
+          <label>Month Filter</label>
+          <input type="month" id="adminMonth" />
+          <label>School Code Filter</label>
+          <input id="adminSchoolFilter" placeholder="Leave empty for all schools" />
+          <div class="btn-row">
+            <button onclick="loadReport()">View Report</button>
+            <button class="btn-green" onclick="downloadCSV()">Download CSV</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Attendance Report</h3>
+          <div class="scroll-x"><table class="report-table" id="reportTable"></table></div>
+        </div>
+        <div class="card">
+          <h3>New Employee Requests</h3>
+          <div id="requestsBox"></div>
+          <button class="btn-orange" style="margin-top:12px" onclick="loadRequests()">Refresh Requests</button>
+        </div>
+      </div>
     </div>
   </div>
+  <div id="toast" class="toast"></div>
+
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwBF1nyWm8ePlIYbBUgzHxbRdJEb6loBu91xTBuG1pubQtGD9ZQqt7vK2jc69HQnI1G/exec";
-let currentUser={schoolCode:"",username:"",role:"School"}; let records={}; let latestAdminRows=[];
-function showMessage(id,text,type="info"){const el=document.getElementById(id);el.className="msg "+type;el.textContent=text} function clearMessage(id){const el=document.getElementById(id);el.className="msg";el.textContent=""}
-async function apiPost(payload){const res=await fetch(API_URL,{method:"POST",body:JSON.stringify(payload)});return await res.json()}
-async function login(){clearMessage("loginMsg");const schoolCode=document.getElementById("schoolCode").value.trim();const username=document.getElementById("username").value.trim();const password=document.getElementById("password").value.trim();if(!schoolCode||!username||!password){showMessage("loginMsg","Please enter school code, username and password.","err");return}try{const res=await apiPost({action:"login",schoolCode,username,password});if(!res.success){showMessage("loginMsg",res.message||"Login failed.","err");return}currentUser={schoolCode:res.schoolCode,username:res.username,role:res.role||"School"};document.getElementById("loginCard").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("welcomeText").textContent="Welcome, "+currentUser.username;document.getElementById("roleText").textContent="Role: "+currentUser.role+" | School Code: "+currentUser.schoolCode;document.getElementById("topSubtitle").textContent=String(currentUser.role).toLowerCase()==="admin"?"Admin panel for all schools.":"Submit monthly attendance for your school.";if(String(currentUser.role).toLowerCase()==="admin"){document.getElementById("schoolPanel").classList.add("hidden");document.getElementById("adminPanel").classList.remove("hidden");loadAdminDashboard()}else{document.getElementById("schoolPanel").classList.remove("hidden");document.getElementById("adminPanel").classList.add("hidden");setDefaultMonth();loadEmployees()}}catch(err){showMessage("loginMsg","Network error. Please check API URL or deployment access.","err")}}
-function logout(){currentUser={schoolCode:"",username:"",role:"School"};records={};document.getElementById("app").classList.add("hidden");document.getElementById("loginCard").classList.remove("hidden");document.getElementById("password").value="";document.getElementById("topSubtitle").textContent="School login, attendance, register image and admin panel."}
-function setDefaultMonth(){const d=new Date();document.getElementById("month").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")}
-async function loadEmployees(){const box=document.getElementById("employees");box.innerHTML="";clearMessage("employeeMsg");try{const res=await apiPost({action:"employees",schoolCode:currentUser.schoolCode});if(!res.success){showMessage("employeeMsg",res.message||"Employees not loaded.","err");return}records={};if(!res.employees.length){showMessage("employeeMsg","No active employees found for this school.","info");return}res.employees.forEach(emp=>{records[emp.id]={...emp,absentDays:0,remarks:"",approved:false};const card=document.createElement("div");card.className="employee-card";card.id="card_"+safeId(emp.id);card.innerHTML=`<div class="emp-head"><div><div class="emp-name">${escapeHtml(emp.name||"-")}</div><div class="emp-meta">Father: ${escapeHtml(emp.father||"-")}<br>ID: ${escapeHtml(emp.id||"-")} | Campus: ${escapeHtml(emp.campus||"-")}<br>Bank: ${escapeHtml(emp.bank||"-")}</div></div><span class="badge" id="badge_${safeId(emp.id)}">Pending</span></div><div class="att-line"><div><label>Absent Days</label><input type="number" min="0" value="0" inputmode="numeric" onchange="setAbsent('${jsEscape(emp.id)}',this.value)"></div><div><label>&nbsp;</label><button class="green" onclick="approveEmployee('${jsEscape(emp.id)}')">Approve</button></div></div><label>Remarks</label><textarea placeholder="Write remarks if needed" onchange="setRemarks('${jsEscape(emp.id)}',this.value)"></textarea><div class="actions"><button class="red" onclick="resignEmployee('${jsEscape(emp.id)}')">Resign</button><button class="secondary" onclick="clearEmployee('${jsEscape(emp.id)}')">Clear</button></div>`;box.appendChild(card)})}catch(err){showMessage("employeeMsg","Network error while loading employees.","err")}}
-function setAbsent(id,value){if(records[id])records[id].absentDays=value||0} function setRemarks(id,value){if(records[id])records[id].remarks=value||""}
-function approveEmployee(id){if(!records[id])return;records[id].approved=true;const card=document.getElementById("card_"+safeId(id));const badge=document.getElementById("badge_"+safeId(id));if(card)card.classList.add("approved-box");if(badge){badge.textContent="Approved";badge.style.background="#dcfce7";badge.style.color="#166534"}}
-function clearEmployee(id){if(!records[id])return;records[id].absentDays=0;records[id].remarks="";records[id].approved=false;loadEmployees()}
-async function resignEmployee(id){const emp=records[id];if(!emp)return;if(!confirm("Mark this employee as resigned?\n\n"+emp.name))return;try{const res=await apiPost({action:"resignEmployee",empId:id,schoolCode:currentUser.schoolCode});if(res.success){alert("Employee marked as resigned.");loadEmployees()}else alert(res.message||"Could not resign employee.")}catch(err){alert("Network error while resigning employee.")}}
-async function submitAll(){clearMessage("submitMsg");const month=document.getElementById("month").value;const file=document.getElementById("image").files[0];if(!month){showMessage("submitMsg","Please select attendance month.","err");return}if(!file){showMessage("submitMsg","Please upload attendance register image.","err");return}const allRecords=Object.values(records);if(!allRecords.length){showMessage("submitMsg","No employees found.","err");return}const unapproved=allRecords.filter(r=>!r.approved);if(unapproved.length>0&&!confirm(unapproved.length+" employees are still pending. Submit anyway?"))return;showMessage("submitMsg","Uploading attendance. Please wait...","info");const reader=new FileReader();reader.onload=async function(){try{const res=await apiPost({action:"submit",schoolCode:currentUser.schoolCode,username:currentUser.username,month,image:reader.result,records:allRecords});showMessage("submitMsg",res.message||(res.success?"Attendance submitted successfully.":"Submission failed."),res.success?"ok":"err")}catch(err){showMessage("submitMsg","Network error while submitting attendance.","err")}};reader.readAsDataURL(file)}
-async function addEmployee(){clearMessage("addMsg");const name=document.getElementById("empName").value.trim();const father=document.getElementById("empFather").value.trim();const cnic=document.getElementById("empCnic").value.trim();const mobile=document.getElementById("empMobile").value.trim();const campus=document.getElementById("empCampus").value.trim();const bank=document.getElementById("empBank").value.trim();if(!name||!father||!campus){showMessage("addMsg","Employee name, father name and campus are required.","err");return}try{const res=await apiPost({action:"addEmployee",schoolCode:currentUser.schoolCode,name,father,cnic,mobile,campus,bank});if(res.success){showMessage("addMsg","New employee request submitted successfully.","ok");["empName","empFather","empCnic","empMobile","empCampus","empBank"].forEach(id=>document.getElementById(id).value="")}else showMessage("addMsg",res.message||"Request failed.","err")}catch(err){showMessage("addMsg","Network error while submitting request.","err")}}
-function showAdminSection(section){document.getElementById("adminDashboardCard").classList.toggle("hidden",section!=="dashboard");document.getElementById("adminRequestsCard").classList.toggle("hidden",section!=="requests");if(section==="requests")loadNewRequests()}
-async function loadAdminDashboard(){const report=document.getElementById("adminReport");report.innerHTML="";clearMessage("adminMsg");try{const res=await apiPost({action:"adminDashboard",role:currentUser.role,month:document.getElementById("adminMonth").value,schoolCodeFilter:document.getElementById("adminSchoolFilter").value.trim()});if(!res.success){showMessage("adminMsg",res.message||"Report not loaded.","err");return}latestAdminRows=res.submissions||[];if(!latestAdminRows.length){showMessage("adminMsg","No records found.","info");return}latestAdminRows.forEach(r=>{const div=document.createElement("div");div.className="admin-item";div.innerHTML=`<b>${escapeHtml(r.name)}</b><br>Father: ${escapeHtml(r.father||"-")} | Bank: ${escapeHtml(r.bank||"-")}<br>School: ${escapeHtml(r.schoolCode)} | Campus: ${escapeHtml(r.campus)} | Month: ${escapeHtml(r.month)}<br>Absent: ${escapeHtml(r.absentDays)} | Status: ${escapeHtml(r.approved)}<br>Remarks: ${escapeHtml(r.remarks||"-")}<br>${r.imageUrl?`<a class="link" href="${escapeAttr(r.imageUrl)}" target="_blank">Open Register Image</a>`:""}`;report.appendChild(div)})}catch(err){showMessage("adminMsg","Network error while loading admin dashboard.","err")}}
-function downloadCSV(){if(!latestAdminRows.length){alert("Please load report first.");return}const headers=["Date","Month","School Code","Campus","Employee ID","Name","Father Name","Bank Name","Absent Days","Remarks","Approved","Image URL","Submitted By"];const lines=[headers.join(",")];latestAdminRows.forEach(r=>{lines.push([r.date,r.month,r.schoolCode,r.campus,r.empId,r.name,r.father,r.bank,r.absentDays,r.remarks,r.approved,r.imageUrl,r.submittedBy].map(csvCell).join(","))});const blob=new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="monthly_attendance_report.csv";a.click();URL.revokeObjectURL(url)}
-async function loadNewRequests(){const box=document.getElementById("requestList");box.innerHTML="";clearMessage("requestMsg");try{const res=await apiPost({action:"newEmployeeRequests",role:currentUser.role});if(!res.success){showMessage("requestMsg",res.message||"Requests not loaded.","err");return}const pending=(res.requests||[]).filter(r=>String(r.status).toLowerCase()==="pending");if(!pending.length){showMessage("requestMsg","No pending employee requests.","info");return}pending.forEach(r=>{const div=document.createElement("div");div.className="admin-item";div.innerHTML=`<b>${escapeHtml(r.name)}</b><br>Father: ${escapeHtml(r.father||"-")}<br>School: ${escapeHtml(r.schoolCode)} | Campus: ${escapeHtml(r.campus||"-")}<br>CNIC: ${escapeHtml(r.cnic||"-")} | Mobile: ${escapeHtml(r.mobile||"-")}<br>Bank: ${escapeHtml(r.bank||"-")}<br><div class="actions"><button class="green" onclick="approveRequest(${Number(r.rowNumber)})">Approve</button><button class="red" onclick="rejectRequest(${Number(r.rowNumber)})">Reject</button></div>`;box.appendChild(div)})}catch(err){showMessage("requestMsg","Network error while loading requests.","err")}}
-async function approveRequest(rowNumber){try{const res=await apiPost({action:"approveNewEmployee",role:currentUser.role,rowNumber});alert(res.message||(res.success?"Approved.":"Failed."));loadNewRequests()}catch(err){alert("Network error.")}}
-async function rejectRequest(rowNumber){try{const res=await apiPost({action:"rejectNewEmployee",role:currentUser.role,rowNumber});alert(res.message||(res.success?"Rejected.":"Failed."));loadNewRequests()}catch(err){alert("Network error.")}}
-function safeId(value){return String(value).replace(/[^a-zA-Z0-9_-]/g,"_")} function jsEscape(value){return String(value).replace(/\\/g,"\\\\").replace(/'/g,"\\'")} function escapeHtml(value){return String(value).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")} function escapeAttr(value){return escapeHtml(value)} function csvCell(value){const s=String(value??"");return '"'+s.replaceAll('"','""')+'"'}
+let currentUser = { schoolCode:"", username:"", role:"School" };
+let employees = [];
+let records = {};
+let lastReport = [];
+
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',3500); }
+async function api(payload){
+  const res = await fetch(API_URL, { method:'POST', body: JSON.stringify(payload) });
+  return await res.json();
+}
+function setDefaultMonth(){ const d=new Date(); document.getElementById('attendanceMonth').value = d.toISOString().slice(0,7); document.getElementById('adminMonth').value = d.toISOString().slice(0,7); }
+setDefaultMonth();
+
+async function login(){
+  const schoolCode=document.getElementById('schoolCode').value.trim();
+  const username=document.getElementById('username').value.trim();
+  const password=document.getElementById('password').value;
+  if(!schoolCode || !username || !password){ toast('Please enter school code, username and password.'); return; }
+  try{
+    const res = await api({ action:'login', schoolCode, username, password });
+    if(!res.success){ toast(res.message || 'Login failed.'); return; }
+    currentUser = { schoolCode, username, role: res.role || 'School' };
+    document.getElementById('loginCard').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('topbar').style.display='flex';
+    document.getElementById('userBadge').textContent = username + ' | ' + schoolCode;
+    document.getElementById('roleBadge').textContent = currentUser.role;
+    if(currentUser.role.toLowerCase()==='admin') document.getElementById('tabs').style.display='grid';
+    await loadEmployees();
+  }catch(e){ toast('Network error. Please check API URL or deployment.'); }
+}
+function logout(){ location.reload(); }
+function showTab(tab){
+  document.getElementById('attendanceView').classList.toggle('hidden', tab!=='attendance');
+  document.getElementById('adminView').classList.toggle('hidden', tab!=='admin');
+  document.getElementById('tabAttendance').classList.toggle('active', tab==='attendance');
+  document.getElementById('tabAdmin').classList.toggle('active', tab==='admin');
+  if(tab==='admin'){ loadReport(); loadRequests(); }
+}
+
+async function loadEmployees(){
+  const res = await api({ action:'employees', schoolCode: currentUser.schoolCode });
+  if(!res.success){ toast(res.message || 'Could not load employees.'); return; }
+  employees = res.employees || [];
+  records = {};
+  const box = document.getElementById('employeesBox');
+  box.innerHTML = '';
+  if(!employees.length){ box.innerHTML = '<div class="card"><p class="hint">No active employees found.</p></div>'; return; }
+  employees.forEach(emp=>{
+    const id = String(emp.id || '').replace(/'/g,'');
+    records[id] = { id: emp.id, name: emp.name, father: emp.father || '', campus: emp.campus || '', bank: emp.bank || '', absentDays: 0, remarks: '', approved: false };
+    const div=document.createElement('div'); div.className='employee-card'; div.id='emp_'+id;
+    div.innerHTML = `
+      <div class="emp-head">
+        <div>
+          <div class="emp-name">${emp.name || ''}</div>
+          <div class="emp-meta">Father: ${emp.father || '-'}<br>ID: ${emp.id || '-'} | Campus: ${emp.campus || '-'}<br>Bank: ${emp.bank || '-'}</div>
+        </div>
+        <span class="status" id="st_${id}">Pending</span>
+      </div>
+      <div class="compact-line">
+        <div class="small-input"><label>Absent</label><input type="number" min="0" value="0" oninput="records['${id}'].absentDays=this.value"></div>
+        <div><label>Remarks</label><input placeholder="Write remarks" oninput="records['${id}'].remarks=this.value"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-green" onclick="approveEmployee('${id}')">Approve</button>
+        <button class="btn-red" onclick="resignEmployee('${id}')">Resign</button>
+      </div>`;
+    box.appendChild(div);
+  });
+}
+function approveEmployee(id){ records[id].approved=true; const s=document.getElementById('st_'+id); if(s){s.textContent='Approved';s.classList.add('ok')} }
+async function resignEmployee(id){
+  if(!confirm('Mark this employee as resigned?')) return;
+  const res = await api({ action:'resignEmployee', empId: id, schoolCode: currentUser.schoolCode, username: currentUser.username });
+  if(res.success){ toast('Employee marked as resigned.'); loadEmployees(); } else toast(res.message || 'Could not resign employee.');
+}
+function readFileAsDataURL(file){ return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); }); }
+async function submitAttendance(){
+  const month=document.getElementById('attendanceMonth').value;
+  const file=document.getElementById('registerImage').files[0];
+  if(!month){ toast('Please select month.'); return; }
+  if(!file){ toast('Please upload attendance register image.'); return; }
+  const notApproved = Object.values(records).filter(r=>!r.approved).length;
+  if(notApproved && !confirm(notApproved+' employees are still pending. Submit anyway?')) return;
+  try{
+    const image = await readFileAsDataURL(file);
+    const res = await api({ action:'submit', schoolCode: currentUser.schoolCode, username: currentUser.username, month, image, records: Object.values(records) });
+    if(res.success) toast('Attendance submitted successfully.'); else toast(res.message || 'Submission failed.');
+  }catch(e){ toast('Image upload failed.'); }
+}
+async function addEmployeeRequest(){
+  const data={ action:'addEmployee', schoolCode:currentUser.schoolCode, username:currentUser.username,
+    name:document.getElementById('newName').value.trim(), father:document.getElementById('newFather').value.trim(), cnic:document.getElementById('newCnic').value.trim(), mobile:document.getElementById('newMobile').value.trim(), campus:document.getElementById('newCampus').value.trim(), bank:document.getElementById('newBank').value.trim() };
+  if(!data.name || !data.father || !data.campus){ toast('Please enter name, father name and campus.'); return; }
+  const res=await api(data);
+  if(res.success){ toast('Employee request submitted.'); ['newName','newFather','newCnic','newMobile','newCampus','newBank'].forEach(id=>document.getElementById(id).value=''); }
+  else toast(res.message || 'Request failed.');
+}
+async function loadReport(){
+  if(currentUser.role.toLowerCase()!=='admin') return;
+  const res=await api({ action:'adminReport', month:document.getElementById('adminMonth').value, schoolCode:document.getElementById('adminSchoolFilter').value.trim(), username:currentUser.username });
+  if(!res.success){ toast(res.message || 'Report failed.'); return; }
+  lastReport=res.rows || [];
+  const table=document.getElementById('reportTable');
+  table.innerHTML='<tr><th>Date</th><th>Month</th><th>School</th><th>Campus</th><th>ID</th><th>Name</th><th>Absent</th><th>Status</th></tr>';
+  lastReport.forEach(r=>{ table.innerHTML += `<tr><td>${r.date||''}</td><td>${r.month||''}</td><td>${r.schoolCode||''}</td><td>${r.campus||''}</td><td>${r.id||''}</td><td>${r.name||''}</td><td>${r.absentDays||''}</td><td>${r.approved||''}</td></tr>`; });
+}
+function downloadCSV(){
+  if(!lastReport.length){ toast('No report data to download.'); return; }
+  const cols=['date','month','schoolCode','campus','id','name','absentDays','remarks','approved','imageUrl','submittedBy'];
+  const csv=[cols.join(',')].concat(lastReport.map(r=>cols.map(c=>'"'+String(r[c]??'').replace(/"/g,'""')+'"').join(','))).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='attendance_report.csv'; a.click();
+}
+async function loadRequests(){
+  if(currentUser.role.toLowerCase()!=='admin') return;
+  const res=await api({ action:'employeeRequests', username:currentUser.username });
+  const box=document.getElementById('requestsBox'); box.innerHTML='';
+  if(!res.success){ box.innerHTML='<p class="hint">Could not load requests.</p>'; return; }
+  const rows=res.requests||[]; if(!rows.length){ box.innerHTML='<p class="hint">No pending requests.</p>'; return; }
+  rows.forEach(req=>{ const div=document.createElement('div'); div.className='employee-card'; div.innerHTML=`<div class="emp-name">${req.name||''}</div><div class="emp-meta">Father: ${req.father||'-'}<br>School: ${req.schoolCode||'-'} | Campus: ${req.campus||'-'}<br>CNIC: ${req.cnic||'-'} | Bank: ${req.bank||'-'}</div><div class="btn-row"><button class="btn-green" onclick="decideRequest('${req.row}','Approved')">Approve</button><button class="btn-red" onclick="decideRequest('${req.row}','Rejected')">Reject</button></div>`; box.appendChild(div); });
+}
+async function decideRequest(row,status){ const res=await api({ action:'decideEmployeeRequest', row, status, username:currentUser.username }); if(res.success){ toast('Request '+status+'.'); loadRequests(); } else toast(res.message || 'Action failed.'); }
 </script>
 </body>
 </html>
