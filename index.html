@@ -42,6 +42,23 @@
     .status.pending { background:#ffedd5; color:#9a3412; }
     .status.approved { background:#dcfce7; color:#166534; }
     .summary { display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:12px; }
+    .employee-list { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .emp-card { border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; background: #fff; }
+    .emp-card.approved-card { background: #ecfdf5; border-color: #86efac; }
+    .emp-head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; margin-bottom: 8px; }
+    .emp-name { font-size: 17px; font-weight: 800; color:#0f172a; }
+    .emp-meta { font-size: 13px; color:#475569; line-height:1.45; margin-top:3px; }
+    .emp-status { background:#ffedd5; color:#9a3412; padding:5px 10px; border-radius:999px; font-size:12px; font-weight:800; white-space:nowrap; }
+    .emp-status.done { background:#dcfce7; color:#166534; }
+    .emp-actions { display:grid; grid-template-columns: 110px 1fr; gap:10px; align-items:end; margin-top: 8px; }
+    .emp-actions button { height: 43px; }
+    .emp-card textarea { min-height: 56px; resize: vertical; }
+    @media (max-width: 420px) {
+      .emp-actions { grid-template-columns: 95px 1fr; gap:8px; }
+      .emp-name { font-size: 16px; }
+      .emp-card { padding: 10px; }
+    }
+
     .stat { background:#f8fafc; padding:14px; border-radius:14px; border:1px solid #e2e8f0; }
     .stat b { font-size:24px; display:block; }
     @media (max-width: 720px) {
@@ -109,22 +126,8 @@
             <h3 style="margin:0">Employee Attendance</h3>
             <button class="btn-light" onclick="loadEmployees()">Refresh List</button>
           </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:70px">ID</th>
-                  <th>Employee Name</th>
-                  <th>Father Name</th>
-                  <th>Campus</th>
-                  <th style="width:110px">Absent Days</th>
-                  <th>Remarks</th>
-                  <th style="width:110px">Approve</th>
-                </tr>
-              </thead>
-              <tbody id="employeeRows"></tbody>
-            </table>
-          </div>
+          <p style="margin-top:0;color:#475569;font-size:14px">Use one compact card per employee. Enter absent days, add remarks if needed, then approve.</p>
+          <div id="employeeRows" class="employee-list"></div>
         </div>
 
         <div class="card">
@@ -259,26 +262,44 @@ function loadEmployees() {
     .then(res => {
       if (!res.success) return toast(res.message || 'Unable to load employees.');
       records = {};
-      const tbody = document.getElementById('employeeRows');
-      tbody.innerHTML = '';
+      const list = document.getElementById('employeeRows');
+      list.innerHTML = '';
       if (!res.employees.length) {
-        tbody.innerHTML = '<tr><td colspan="7">No employees found for this school code.</td></tr>';
+        list.innerHTML = '<div class="emp-card">No employees found for this school code.</div>';
         return;
       }
       res.employees.forEach(emp => {
         records[emp.id] = { id: emp.id, name: emp.name, father: emp.father || '', campus: emp.campus || '', absentDays: 0, remarks: '', approved: false };
-        const tr = document.createElement('tr');
-        tr.id = 'row_' + safeId(emp.id);
-        tr.innerHTML = `
-          <td>${escapeHtml(emp.id)}</td>
-          <td><b>${escapeHtml(emp.name)}</b></td>
-          <td>${escapeHtml(emp.father || '-')}</td>
-          <td>${escapeHtml(emp.campus || '-')}</td>
-          <td><input class="small-input" type="number" min="0" value="0" oninput="setAbsent('${escapeAttr(emp.id)}', this.value)"></td>
-          <td><input class="remarks-input" placeholder="Remarks" oninput="setRemarks('${escapeAttr(emp.id)}', this.value)"></td>
-          <td><button class="approve-btn" id="btn_${safeId(emp.id)}" onclick="approveEmployee('${escapeAttr(emp.id)}')">Approve</button></td>
+        const card = document.createElement('div');
+        card.className = 'emp-card';
+        card.id = 'row_' + safeId(emp.id);
+        card.innerHTML = `
+          <div class="emp-head">
+            <div>
+              <div class="emp-name">${escapeHtml(emp.name)}</div>
+              <div class="emp-meta">
+                Father: <b>${escapeHtml(emp.father || '-')}</b><br>
+                ID: ${escapeHtml(emp.id)} | Campus: ${escapeHtml(emp.campus || '-')}
+              </div>
+            </div>
+            <span class="emp-status" id="status_${safeId(emp.id)}">Pending</span>
+          </div>
+
+          <div class="emp-actions">
+            <div>
+              <label>Absent</label>
+              <input type="number" min="0" value="0" oninput="setAbsent('${escapeAttr(emp.id)}', this.value)">
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <button class="approve-btn" id="btn_${safeId(emp.id)}" style="width:100%" onclick="approveEmployee('${escapeAttr(emp.id)}')">Approve</button>
+            </div>
+          </div>
+
+          <label>Remarks</label>
+          <textarea placeholder="Write remarks if needed" oninput="setRemarks('${escapeAttr(emp.id)}', this.value)"></textarea>
         `;
-        tbody.appendChild(tr);
+        list.appendChild(card);
       });
     })
     .catch(err => toast('Network error: ' + err.message));
@@ -289,10 +310,12 @@ function setRemarks(id, value) { if (records[id]) records[id].remarks = value ||
 function approveEmployee(id) {
   if (!records[id]) return;
   records[id].approved = true;
-  const tr = document.getElementById('row_' + safeId(id));
+  const card = document.getElementById('row_' + safeId(id));
   const btn = document.getElementById('btn_' + safeId(id));
-  if (tr) tr.classList.add('approved-row');
+  const status = document.getElementById('status_' + safeId(id));
+  if (card) card.classList.add('approved-card');
   if (btn) { btn.classList.add('done'); btn.textContent = 'Approved'; }
+  if (status) { status.classList.add('done'); status.textContent = 'Approved'; }
 }
 
 function submitAttendance() {
