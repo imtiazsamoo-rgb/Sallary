@@ -198,6 +198,22 @@ function readFilesAsBase64(files){
     reader.readAsDataURL(file);
   })));
 }
+function toggleAddEmployeeForm(){
+  const form=document.getElementById("addEmployeeForm");
+  const btn=document.getElementById("addToggleBtn");
+  if(!form) return;
+  const willOpen=form.classList.contains("hidden");
+  form.classList.toggle("hidden", !willOpen);
+  if(btn) btn.textContent = willOpen ? "Close" : "+ Add";
+  if(willOpen){
+    clearMessage("addMsg");
+    setTimeout(()=> {
+      const nameBox=document.getElementById("empName");
+      if(nameBox) nameBox.focus();
+    }, 100);
+  }
+}
+
 async function addEmployee(){clearMessage("addMsg");const name=document.getElementById("empName").value.trim();const father=document.getElementById("empFather").value.trim();const cnic=document.getElementById("empCnic").value.trim();const mobile=document.getElementById("empMobile").value.trim();const campus=document.getElementById("empCampus").value.trim();const bank=document.getElementById("empBank").value.trim();if(!name||!father||!campus){showMessage("addMsg","Employee name, father name and campus are required.","err");return}try{const res=await apiPost({action:"addEmployee",schoolCode:currentUser.schoolCode,name,father,cnic,mobile,campus,bank});if(res.success){showMessage("addMsg","New employee request submitted successfully.","ok");["empName","empFather","empCnic","empMobile","empCampus","empBank"].forEach(id=>document.getElementById(id).value="")}else showMessage("addMsg",res.message||"Request failed.","err")}catch(err){showMessage("addMsg",err.message||"Network error while submitting request.","err")}}
 function showAdminSection(section){document.getElementById("adminDashboardCard").classList.toggle("hidden",section!=="dashboard");document.getElementById("adminRequestsCard").classList.toggle("hidden",section!=="requests");if(section==="requests")loadNewRequests()}
 async function loadAdminDashboard(){const report=document.getElementById("adminReport");report.innerHTML="";clearMessage("adminMsg");try{const res=await apiPost({action:"adminDashboard",role:currentUser.role,month:document.getElementById("adminMonth").value,schoolCodeFilter:document.getElementById("adminSchoolFilter").value.trim()});if(!res.success){showMessage("adminMsg",res.message||"Report not loaded.","err");return}latestAdminRows=res.submissions||[];if(!latestAdminRows.length){showMessage("adminMsg","No records found.","info");return}latestAdminRows.forEach(r=>{const div=document.createElement("div");div.className="admin-item";div.innerHTML=`<b>${escapeHtml(r.name)}</b><br>${r.father?`Father: ${escapeHtml(r.father)} | `:""}${r.bank?`Bank: ${escapeHtml(r.bank)}<br>`:""}School: ${escapeHtml(r.schoolCode)} | Campus: ${escapeHtml(r.campus)} | Month: ${escapeHtml(r.month)}<br>Absent: ${escapeHtml(r.absentDays)} | Status: ${escapeHtml(r.approved)}<br>Remarks: ${escapeHtml(r.remarks||"-")}<br>${r.imageUrl?`<a class="link" href="${escapeAttr(r.imageUrl)}" target="_blank">Open Register Image</a>`:""}`;report.appendChild(div)})}catch(err){showMessage("adminMsg",err.message||"Network error while loading admin dashboard.","err")}}
