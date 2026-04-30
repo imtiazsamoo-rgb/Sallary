@@ -29,7 +29,7 @@
     button{width:100%;border:0;border-radius:13px;padding:12px;font-size:15px;font-weight:800;color:white;background:var(--primary);cursor:pointer;box-shadow:0 2px 8px rgba(29,78,216,.14)} button:active{transform:scale(.99)}
     button.secondary{background:#475569} button.green{background:var(--green)} button.red{background:var(--red)} button.orange{background:var(--orange)} button.light{background:var(--soft);color:#1d4ed8;border:1px solid #bfdbfe}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.hidden{display:none!important}.msg{padding:10px 12px;border-radius:12px;margin-top:10px;font-size:14px;display:none}.msg.ok{display:block;background:#dcfce7;color:#166534}.msg.err{display:block;background:#fee2e2;color:#991b1b}.msg.info{display:block;background:#e0f2fe;color:#075985}
-    .employee-card{background:white;border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}.emp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}.emp-name{font-size:16px;font-weight:900;line-height:1.25}.emp-meta{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.5}.badge{font-size:11px;border-radius:999px;padding:5px 8px;background:#f1f5f9;color:#334155;white-space:nowrap;font-weight:800}.att-line{display:grid;grid-template-columns:1fr 105px;gap:10px;align-items:end;margin-top:8px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.approved-box{border-color:#86efac!important;background:var(--lightgreen)!important}.section-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.small{font-size:12px;color:var(--muted);line-height:1.45}.admin-item{border:1px solid var(--line);border-radius:14px;padding:10px;margin:8px 0;background:#fff;font-size:13px;line-height:1.5}.admin-item b{font-size:14px}.link{color:var(--primary);text-decoration:none;font-weight:800;word-break:break-all}.footer-space{height:20px}.toggle-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.toggle-head .card-title{margin:0}.mini-btn{width:auto!important;padding:9px 12px!important;font-size:13px!important;border-radius:999px!important;background:var(--soft)!important;color:#1d4ed8!important;border:1px solid #bfdbfe!important;box-shadow:none!important}.add-form-box{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}.employee-card.approved-box .badge{background:#dcfce7!important;color:#166534!important}
+    .employee-card{background:white;border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}.emp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}.emp-name{font-size:16px;font-weight:900;line-height:1.25}.emp-meta{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.5}.badge{font-size:11px;border-radius:999px;padding:5px 8px;background:#f1f5f9;color:#334155;white-space:nowrap;font-weight:800}.att-line{display:grid;grid-template-columns:1fr 105px;gap:10px;align-items:end;margin-top:8px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.approved-box{border-color:#86efac!important;background:var(--lightgreen)!important}.section-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.small{font-size:12px;color:var(--muted);line-height:1.45}.admin-item{border:1px solid var(--line);border-radius:14px;padding:10px;margin:8px 0;background:#fff;font-size:13px;line-height:1.5}.admin-item b{font-size:14px}.link{color:var(--primary);text-decoration:none;font-weight:800;word-break:break-all}.footer-space{height:20px}.image-row{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:10px;margin:8px 0}.toggle-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.toggle-head .card-title{margin:0}.mini-btn{width:auto!important;padding:9px 12px!important;font-size:13px!important;border-radius:999px!important;background:var(--soft)!important;color:#1d4ed8!important;border:1px solid #bfdbfe!important;box-shadow:none!important}.add-form-box{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}.employee-card.approved-box .badge{background:#dcfce7!important;color:#166534!important}
     @media(max-width:420px){.wrap{padding:10px}.card{padding:12px;border-radius:15px}.topbar h1{font-size:18px}.row{grid-template-columns:1fr}.att-line{grid-template-columns:1fr 95px}input,textarea,button{font-size:14px}.actions button{padding:10px 8px;font-size:13px}}
   </style>
 </head>
@@ -53,14 +53,21 @@
           <input type="month" id="month" />
 
           <label>Attendance Register Images</label>
-          <input type="file" id="image" accept="image/*" multiple onchange="handleImageSelect(event)" />
-          <p class="small">Select one or more register images. On some phones, select images again to add more; previous selected images will remain in the list below.</p>
+          <p class="small">Select register images one by one. Use “Add Another Image” for page 2, page 3, etc.</p>
 
-          <div id="imageList" class="small" style="margin-top:8px;font-weight:700;color:#0f172a;"></div>
-          <div class="actions">
-            <button type="button" class="light" onclick="document.getElementById('image').click()">Add More Images</button>
-            <button type="button" class="secondary" onclick="clearSelectedImages()">Clear Images</button>
+          <div id="imageInputs">
+            <div class="image-row">
+              <label>Image 1</label>
+              <input type="file" class="registerImageInput" accept="image/*" onchange="updateImageCount()" />
+            </div>
           </div>
+
+          <div class="actions">
+            <button type="button" class="light" onclick="addImageInput()">+ Add Another Image</button>
+            <button type="button" class="secondary" onclick="clearImageInputs()">Clear Images</button>
+          </div>
+
+          <div id="imageList" class="small" style="margin-top:8px;font-weight:700;color:#0f172a;">No images selected.</div>
         </div>
         <div class="card"><h2 class="card-title">Employee Attendance</h2><div id="employees"></div><div id="employeeMsg" class="msg"></div></div>
         <div class="card"><button class="green" onclick="submitAll()">Submit Attendance</button><div id="submitMsg" class="msg"></div></div>
@@ -96,7 +103,7 @@
   </div>
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwBF1nyWm8ePlIYbBUgzHxbRdJEb6loBu91xTBuG1pubQtGD9ZQqt7vK2jc69HQnI1G/exec";
-let currentUser={schoolCode:"",username:"",role:"School"}; let records={}; let latestAdminRows=[]; let selectedImageFiles=[];
+let currentUser={schoolCode:"",username:"",role:"School"}; let records={}; let latestAdminRows=[]; let imageInputCount=1; let imageInputCount=1;
 function showMessage(id,text,type="info"){const el=document.getElementById(id);el.className="msg "+type;el.textContent=text} function clearMessage(id){const el=document.getElementById(id);el.className="msg";el.textContent=""}
 
 /* payload= JSON method fixes Apps Script/GitHub browser JSON parsing issue */
@@ -120,39 +127,47 @@ function setAbsent(id,value){if(records[id])records[id].absentDays=value||0} fun
 function approveEmployee(id){if(!records[id])return;records[id].approved=true;const card=document.getElementById("card_"+safeId(id));const badge=document.getElementById("badge_"+safeId(id));if(card)card.classList.add("approved-box");if(badge){badge.textContent="Approved";badge.style.background="#dcfce7";badge.style.color="#166534"}}
 function clearEmployee(id){if(!records[id])return;records[id].absentDays=0;records[id].remarks="";records[id].approved=false;loadEmployees()}
 async function resignEmployee(id){const emp=records[id];if(!emp)return;if(!confirm("Mark this employee as resigned?\n\n"+emp.name))return;try{const res=await apiPost({action:"resignEmployee",empId:id,schoolCode:currentUser.schoolCode});if(res.success){alert("Employee marked as resigned.");loadEmployees()}else alert(res.message||"Could not resign employee.")}catch(err){alert(err.message||"Network error while resigning employee.")}}
-function handleImageSelect(event){
-  const files = Array.from(event.target.files || []);
-  files.forEach(file => {
-    const key = file.name + "_" + file.size + "_" + file.lastModified;
-    const exists = selectedImageFiles.some(f => (f.name + "_" + f.size + "_" + f.lastModified) === key);
-    if(!exists) selectedImageFiles.push(file);
-  });
-  event.target.value = "";
-  renderSelectedImages();
+function addImageInput(){
+  imageInputCount++;
+  const wrap=document.getElementById("imageInputs");
+  const div=document.createElement("div");
+  div.className="image-row";
+  div.innerHTML=`<label>Image ${imageInputCount}</label><input type="file" class="registerImageInput" accept="image/*" onchange="updateImageCount()" />`;
+  wrap.appendChild(div);
+  updateImageCount();
 }
 
-function renderSelectedImages(){
+function getSelectedImageFiles(){
+  const inputs=Array.from(document.querySelectorAll(".registerImageInput"));
+  const files=[];
+  inputs.forEach(input=>{
+    Array.from(input.files || []).forEach(file=>files.push(file));
+  });
+  return files;
+}
+
+function updateImageCount(){
+  const files=getSelectedImageFiles();
   const box=document.getElementById("imageList");
   if(!box) return;
-  if(!selectedImageFiles.length){
+  if(!files.length){
     box.textContent="No images selected.";
     return;
   }
-  box.innerHTML = "Selected images: " + selectedImageFiles.length + "<br>" +
-    selectedImageFiles.map((f,i)=> (i+1)+". "+escapeHtml(f.name)).join("<br>");
+  box.innerHTML="Selected images: "+files.length+"<br>"+files.map((f,i)=>(i+1)+". "+escapeHtml(f.name)).join("<br>");
 }
 
-function clearSelectedImages(){
-  selectedImageFiles=[];
-  const input=document.getElementById("image");
-  if(input) input.value="";
-  renderSelectedImages();
+function clearImageInputs(){
+  imageInputCount=1;
+  const wrap=document.getElementById("imageInputs");
+  wrap.innerHTML=`<div class="image-row"><label>Image 1</label><input type="file" class="registerImageInput" accept="image/*" onchange="updateImageCount()" /></div>`;
+  updateImageCount();
 }
 
 async function submitAll(){
   clearMessage("submitMsg");
   const month=document.getElementById("month").value;
-  const files=selectedImageFiles;
+  const files=getSelectedImageFiles();
   if(!month){showMessage("submitMsg","Please select attendance month.","err");return}
   if(!files.length){showMessage("submitMsg","Please select at least one attendance register image.","err");return}
   const allRecords=Object.values(records);
@@ -170,7 +185,7 @@ async function submitAll(){
       images,
       records:allRecords
     });
-    showMessage("submitMsg",res.message||(res.success?"Attendance submitted successfully.":"Submission failed."),res.success?"ok":"err"); if(res.success) clearSelectedImages();
+    showMessage("submitMsg",res.message||(res.success?"Attendance submitted successfully.":"Submission failed."),res.success?"ok":"err"); if(res.success) clearImageInputs();
   }catch(err){
     showMessage("submitMsg",err.message||"Network error while submitting attendance.","err");
   }
