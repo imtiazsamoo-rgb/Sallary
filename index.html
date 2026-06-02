@@ -3,120 +3,325 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBFS Salary Management Portal</title>
+  <title>IBFS Salary & Attendance Portal</title>
   <style>
     :root{
-      --bg:#f8fafc;--card:#ffffff;--text:#0f172a;--muted:#64748b;--line:#e2e8f0;
-      --primary:#2563eb;--primary-dark:#1e40af;--success:#16a34a;--warning:#f59e0b;--danger:#dc2626;
-      --shadow:0 14px 35px rgba(15,23,42,.08);--radius:22px;
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --primary:#2563eb;
+      --primary2:#0891b2;
+      --success:#16a34a;
+      --danger:#dc2626;
+      --warning:#f59e0b;
+      --soft:#eef4ff;
+      --shadow:0 14px 35px rgba(15,23,42,.08);
+      --radius:24px;
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#eef6ff 0%,var(--bg) 300px);color:var(--text)}
-    .app{max-width:1180px;margin:0 auto;padding:18px}
-    .hero{background:linear-gradient(135deg,#0f172a,#1d4ed8 55%,#0f766e);border-radius:28px;color:white;padding:22px;margin-bottom:16px;box-shadow:var(--shadow)}
-    .hero-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .brand{display:flex;gap:12px;align-items:center}.logo{width:48px;height:48px;border-radius:16px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:26px}.brand h1{font-size:22px;margin:0}.brand p{margin:4px 0 0;opacity:.88;font-size:14px}
-    .user-pill{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:10px 14px;display:flex;gap:10px;align-items:center;font-size:13px}.role-badge{background:white;color:#1e40af;border-radius:999px;padding:5px 10px;font-weight:800}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
-    .login-box{max-width:440px;margin:36px auto}.login-box h2{margin:0 0 8px;font-size:28px}.hint{color:var(--muted);font-size:13px;line-height:1.5}.hidden{display:none!important}
-    label{display:block;font-size:13px;font-weight:800;margin:0 0 7px} input,select,textarea{width:100%;border:1px solid #cbd5e1;border-radius:14px;background:white;padding:13px 14px;font-size:15px;outline:none} input:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(37,99,235,.12)} textarea{resize:vertical;min-height:76px}
-    .field{margin-bottom:13px}.toolbar{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap}.left,.right{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.month-field{width:180px}.btn{border:0;border-radius:15px;padding:12px 16px;font-size:14px;font-weight:900;cursor:pointer;color:white;background:var(--primary);box-shadow:0 8px 18px rgba(37,99,235,.18)}.btn:hover{filter:brightness(.97)}.btn.secondary{background:#64748b}.btn.success{background:var(--success)}.btn.warning{background:var(--warning)}.btn.danger{background:var(--danger)}.btn.light{background:#e2e8f0;color:#0f172a;box-shadow:none}.btn.big{padding:15px 18px;font-size:16px}.btn:disabled{opacity:.55;cursor:not-allowed}
-    .message{border-radius:16px;padding:13px 14px;margin:12px 0;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-weight:700}.message.ok{background:#ecfdf5;border-color:#bbf7d0;color:#166534}.message.info{background:#eff6ff;border-color:#bfdbfe;color:#1e40af}
-    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.metric{background:#f8fafc;border:1px solid var(--line);border-radius:18px;padding:16px}.metric .label{color:var(--muted);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}.metric .value{font-size:24px;font-weight:950;margin-top:7px}
-    .tile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.tile{background:white;border:1px solid var(--line);border-radius:24px;padding:20px;min-height:170px;cursor:pointer;box-shadow:var(--shadow);transition:.15s}.tile:hover{transform:translateY(-3px);border-color:#bfdbfe}.tile .icon{font-size:38px;margin-bottom:14px}.tile .title{font-size:19px;font-weight:950;margin-bottom:7px}.tile .desc{color:var(--muted);font-size:13px;line-height:1.45}
-    .screen-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.screen-head h2{margin:0;font-size:24px}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}.step{border:1px solid var(--line);background:#f8fafc;border-radius:15px;padding:11px;font-size:13px;font-weight:900;color:var(--muted)}.step.active{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}.step.done{background:#ecfdf5;border-color:#86efac;color:#166534}
-    .wizard-panel{display:none}.wizard-panel.active{display:block}.upload-box{border:2px dashed #93c5fd;background:#eff6ff;border-radius:22px;padding:22px;text-align:center}.upload-box input{margin-top:12px;background:white}.preview-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}.preview{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:white}.preview img{width:100%;height:110px;object-fit:cover;display:block}.preview div{padding:8px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .teacher-list{display:grid;grid-template-columns:1fr;gap:12px}.teacher-card{border:1px solid var(--line);border-radius:20px;padding:14px;background:white}.teacher-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}.teacher-name{font-weight:950;font-size:16px}.teacher-meta{font-size:12px;color:var(--muted);margin-top:3px}.counter-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.counter{background:#f8fafc;border:1px solid var(--line);border-radius:16px;padding:10px}.counter-title{font-size:12px;font-weight:900;margin-bottom:8px;color:#334155}.counter-control{display:flex;align-items:center;justify-content:space-between;gap:8px}.round{width:34px;height:34px;border:0;border-radius:12px;background:#e2e8f0;font-size:20px;font-weight:950;cursor:pointer}.num{min-width:34px;text-align:center;font-size:18px;font-weight:950}.remarks{margin-top:10px}.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.summary-box{border:1px solid var(--line);background:#f8fafc;border-radius:18px;padding:16px}.summary-box .label{color:var(--muted);font-weight:800;font-size:12px}.summary-box .value{font-size:23px;font-weight:950;margin-top:6px}
-    table{width:100%;border-collapse:collapse}th,td{padding:12px;border-bottom:1px solid var(--line);font-size:13px;text-align:left}th{background:#f1f5f9}.table-wrap{overflow-x:auto}.quick-actions{display:flex;gap:10px;flex-wrap:wrap}.empty{text-align:center;color:var(--muted);padding:28px}.admin-only-screen{}
-    @media(max-width:920px){.tile-grid{grid-template-columns:repeat(2,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}.counter-grid{grid-template-columns:repeat(2,1fr)}.preview-grid{grid-template-columns:repeat(3,1fr)}.steps{grid-template-columns:repeat(2,1fr)}.summary-grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:560px){.app{padding:10px}.hero{border-radius:20px;padding:16px}.brand h1{font-size:18px}.tile-grid,.metrics,.counter-grid,.preview-grid,.summary-grid,.steps{grid-template-columns:1fr}.month-field,.left,.right,.left .btn,.right .btn{width:100%}.btn{width:100%}.tile{min-height:135px}.teacher-top{display:block}.user-pill{border-radius:18px;width:100%;justify-content:space-between}}
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      background:linear-gradient(180deg,#eef6ff 0%,var(--bg) 220px);
+      color:var(--ink);
+    }
+    button,input,select,textarea{font:inherit}
+    button{border:0;cursor:pointer}
+    .hidden{display:none!important}
+    .app{max-width:1280px;margin:0 auto;padding:18px}
+    .hero{
+      background:linear-gradient(135deg,#111c44 0%,#2454d6 45%,#0f766e 100%);
+      color:#fff;border-radius:28px;padding:24px 26px;
+      display:flex;justify-content:space-between;align-items:center;gap:18px;
+      box-shadow:var(--shadow);
+    }
+    .brand{display:flex;align-items:center;gap:16px}
+    .logo{
+      width:64px;height:64px;border-radius:18px;background:rgba(255,255,255,.13);
+      display:grid;place-items:center;font-size:36px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)
+    }
+    .brand h1{margin:0;font-size:27px;line-height:1.15}
+    .brand p{margin:6px 0 0;color:#dbeafe}
+    .user-pill{
+      background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);
+      border-radius:999px;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap
+    }
+    .badge{background:#fff;color:#1e3a8a;border-radius:999px;padding:6px 12px;font-weight:800}
+    .login-card{
+      max-width:460px;margin:60px auto;background:#fff;border-radius:26px;padding:28px;
+      box-shadow:var(--shadow)
+    }
+    h2,h3{margin-top:0}
+    label{display:block;font-weight:800;margin:0 0 7px}
+    input,select,textarea{
+      width:100%;padding:14px 15px;border:1px solid var(--line);border-radius:16px;
+      background:#fff;margin-bottom:13px;outline:none
+    }
+    input:focus,select:focus,textarea:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+    .btn{
+      padding:13px 18px;border-radius:16px;font-weight:900;color:#fff;background:var(--primary);
+      display:inline-flex;gap:8px;align-items:center;justify-content:center
+    }
+    .btn.light{background:#e2e8f0;color:#0f172a}
+    .btn.success{background:var(--success)}
+    .btn.danger{background:var(--danger)}
+    .btn.warning{background:var(--warning);color:#111827}
+    .btn.block{width:100%}
+    .toolbar{
+      margin:18px 0;background:#fff;border-radius:24px;padding:18px;box-shadow:var(--shadow);
+      display:flex;justify-content:space-between;gap:12px;align-items:end;flex-wrap:wrap
+    }
+    .toolbar .left,.toolbar .right{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
+    .month{width:210px}
+    .message{
+      margin:12px 0 0;padding:14px 16px;border-radius:18px;
+      background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;font-weight:700
+    }
+    .message.ok{background:#ecfdf5;color:#166534;border-color:#bbf7d0}
+    .message.bad{background:#fef2f2;color:#991b1b;border-color:#fecaca}
+    .title-card{background:#fff;border-radius:24px;padding:22px 24px;margin:18px 0;box-shadow:var(--shadow)}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:18px 0}
+    .kpi{
+      background:#fff;border-radius:22px;padding:18px;box-shadow:var(--shadow);min-height:118px;
+      border:1px solid rgba(226,232,240,.8)
+    }
+    .kpi .ico{font-size:30px}.kpi .label{color:var(--muted);font-size:13px;font-weight:800;margin-top:8px}
+    .kpi .value{font-size:25px;font-weight:950;margin-top:5px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .action{
+      background:#fff;border-radius:24px;padding:24px;box-shadow:var(--shadow);min-height:172px;
+      transition:.15s ease;border:1px solid rgba(226,232,240,.9)
+    }
+    .action:hover{transform:translateY(-3px);box-shadow:0 20px 40px rgba(15,23,42,.12)}
+    .action .ico{font-size:42px;margin-bottom:16px}
+    .action h3{font-size:23px;margin:0 0 7px}
+    .action p{margin:0;color:var(--muted);line-height:1.45}
+    .screen{background:#fff;border-radius:24px;padding:20px;box-shadow:var(--shadow);margin-top:18px}
+    .screen-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+    .note{color:var(--muted);font-size:14px;line-height:1.55}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}
+    table{border-collapse:collapse;width:100%;min-width:850px}
+    th,td{padding:13px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+    th{background:#f8fafc;font-weight:900}
+    .wizard{display:grid;grid-template-columns:260px 1fr;gap:18px}
+    .steps{background:#f8fafc;border-radius:22px;padding:14px;border:1px solid var(--line);height:max-content}
+    .step-tab{
+      padding:14px;border-radius:16px;margin-bottom:9px;font-weight:900;color:var(--muted);
+      display:flex;gap:10px;align-items:center
+    }
+    .step-tab.active{background:#dbeafe;color:#1d4ed8}
+    .step-panel{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px}
+    .upload-box{
+      border:2px dashed #93c5fd;border-radius:22px;padding:26px;text-align:center;background:#f8fbff
+    }
+    .preview{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:14px}
+    .preview-card{border:1px solid var(--line);border-radius:16px;padding:8px;background:#fff}
+    .preview-card img{width:100%;height:90px;object-fit:cover;border-radius:12px}
+    .teacher-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .teacher-card{
+      border:1px solid var(--line);border-radius:20px;padding:16px;background:#fff
+    }
+    .teacher-top{display:flex;justify-content:space-between;gap:8px;margin-bottom:12px}
+    .teacher-name{font-weight:950;font-size:18px}.teacher-desig{color:var(--muted);font-size:13px}
+    .counter-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;margin:9px 0}
+    .counter-label{font-weight:800;color:#334155}
+    .counter{display:flex;align-items:center;gap:8px;background:#f8fafc;border-radius:14px;padding:5px}
+    .counter button{width:32px;height:32px;border-radius:10px;background:#e2e8f0;font-weight:950}
+    .counter input{width:48px;text-align:center;margin:0;padding:8px;border-radius:10px}
+    .summary-box{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:14px 0}
+    .summary-item{background:#f8fafc;border-radius:18px;padding:16px;border:1px solid var(--line)}
+    .summary-item b{display:block;font-size:24px;margin-top:5px}
+    .quickbar{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+    @media(max-width:1000px){
+      .kpis,.grid{grid-template-columns:repeat(2,1fr)}
+      .wizard{grid-template-columns:1fr}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+      .teacher-grid{grid-template-columns:1fr}
+    }
+    @media(max-width:620px){
+      .app{padding:10px}.hero{border-radius:22px;padding:18px;align-items:flex-start}
+      .brand h1{font-size:21px}.logo{width:54px;height:54px;font-size:30px}
+      .user-pill{border-radius:18px}.kpis,.grid,.summary-box{grid-template-columns:1fr}
+      .toolbar .left,.toolbar .right,.month{width:100%}.btn{width:100%}
+      .steps{grid-template-columns:1fr}.step-tab{margin-bottom:0}
+      .counter-row{grid-template-columns:1fr}.counter{justify-content:space-between}
+    }
   </style>
 </head>
 <body>
   <div class="app">
     <div class="hero">
-      <div class="hero-top">
-        <div class="brand"><div class="logo">🏫</div><div><h1>Indus Bright Future School System</h1><p>Salary & Attendance Portal</p></div></div>
-        <div id="userInfo" class="user-pill hidden"></div>
+      <div class="brand">
+        <div class="logo">🏫</div>
+        <div>
+          <h1>Indus Bright Future School System</h1>
+          <p>Salary & Attendance Portal</p>
+        </div>
       </div>
+      <div id="userInfo" class="user-pill hidden"></div>
     </div>
 
-    <div id="loginView" class="card login-box">
-      <h2>Welcome back</h2>
-      <p class="hint">Login to continue to your school salary and attendance portal.</p>
+    <div id="loginView" class="login-card">
+      <h2>Login</h2>
+      <p class="note">Enter the username and password provided by the administrator.</p>
       <div id="loginMessage"></div>
-      <div class="field"><label>Username / Email</label><input id="usernameInput" type="text" placeholder="Enter your username" autocomplete="username"></div>
-      <div class="field"><label>Password</label><input id="passwordInput" type="password" placeholder="Enter your password" autocomplete="current-password"></div>
-      <button class="btn big" onclick="login()">Login</button>
+      <label>Username</label>
+      <input id="usernameInput" type="text" placeholder="example@gmail.com" value="imtiaz.samoo@gmail.com">
+      <label>Password</label>
+      <input id="passwordInput" type="password" placeholder="Password">
+      <button class="btn block" onclick="login()">Login</button>
     </div>
 
     <div id="portalView" class="hidden">
-      <div class="card">
-        <div class="toolbar">
-          <div class="left">
-            <div class="month-field"><label>Working Month</label><input id="monthInput" type="month" value="2026-05"></div>
-            <button class="btn light" onclick="refreshHome()">Refresh</button>
+      <div class="toolbar">
+        <div class="left">
+          <div class="month">
+            <label>Working Month</label>
+            <input id="monthInput" type="month" value="2026-05">
           </div>
-          <div class="right"><button class="btn light" onclick="showHome()">Home</button><button class="btn danger" onclick="logout()">Logout</button></div>
+          <button class="btn light" onclick="refreshHome()">Refresh</button>
         </div>
-        <div id="mainMessage"></div>
+        <div class="right">
+          <button class="btn light" onclick="showHome()">Home</button>
+          <button class="btn danger" onclick="logout()">Logout</button>
+        </div>
+        <div id="mainMessage" style="width:100%"></div>
       </div>
 
       <div id="homeScreen">
-        <div class="card"><div class="screen-head"><h2 id="dashboardTitle">Dashboard</h2></div><div id="dashboardCards" class="metrics"></div></div>
-        <div id="portalTiles" class="tile-grid"></div>
+        <div class="title-card">
+          <h2 id="dashboardTitle">Dashboard</h2>
+          <p class="note" id="dashboardSubtitle">Simple, mobile-friendly controls for school salary and attendance work.</p>
+        </div>
+        <div id="dashboardCards" class="kpis"></div>
+        <div id="portalTiles" class="grid"></div>
       </div>
 
-      <div id="attendanceScreen" class="screen card hidden">
-        <div class="screen-head"><h2>Fill Attendance</h2><button class="btn light" onclick="showHome()">Back</button></div>
-        <p class="hint">Follow the steps below. Upload register images first, then fill attendance for all staff.</p>
+      <div id="attendanceScreen" class="screen hidden">
+        <div class="screen-head">
+          <div>
+            <h2>📋 Attendance Wizard</h2>
+            <p class="note">Complete all steps, then submit attendance. Messages will appear in English.</p>
+          </div>
+          <button class="btn light" onclick="showHome()">Back</button>
+        </div>
         <div id="attendanceMessage"></div>
-        <div class="steps"><div id="step1" class="step active">1. Month</div><div id="step2" class="step">2. Register Images</div><div id="step3" class="step">3. Staff Attendance</div><div id="step4" class="step">4. Review & Save</div></div>
 
-        <div id="panel1" class="wizard-panel active">
-          <h3>Select Month</h3><div class="field month-field"><label>Month</label><input id="attendanceMonthInput" type="month" value="2026-05" onchange="syncAttendanceMonth()"></div>
-          <button class="btn big" onclick="goStep(2)">Next</button>
-        </div>
+        <div class="wizard">
+          <div class="steps">
+            <div id="tab1" class="step-tab active" onclick="goStep(1)">1️⃣ Month</div>
+            <div id="tab2" class="step-tab" onclick="goStep(2)">2️⃣ Photos</div>
+            <div id="tab3" class="step-tab" onclick="goStep(3)">3️⃣ Staff</div>
+            <div id="tab4" class="step-tab" onclick="goStep(4)">4️⃣ Review</div>
+          </div>
 
-        <div id="panel2" class="wizard-panel">
-          <h3>Upload Attendance Register Images</h3>
-          <div class="upload-box"><strong>Upload one or more register photos</strong><p class="hint">You can use camera photos or gallery images.</p><input id="registerImagesInput" type="file" accept="image/*" multiple onchange="previewRegisterImages()"></div>
-          <div id="registerImagePreview" class="preview-grid"></div>
-          <div class="quick-actions" style="margin-top:14px"><button class="btn light" onclick="goStep(1)">Back</button><button class="btn big" onclick="goStep(3)">Next</button></div>
-        </div>
+          <div class="step-panel">
+            <div id="step1">
+              <h3>Select Month</h3>
+              <p class="note">Confirm the month for attendance entry.</p>
+              <label>Month</label>
+              <input id="attMonthInput" type="month" value="2026-05" onchange="syncMonthFromAttendance()">
+              <button class="btn" onclick="goStep(2)">Next: Upload Photos</button>
+            </div>
 
-        <div id="panel3" class="wizard-panel">
-          <div class="screen-head"><h3>Staff Attendance</h3><button class="btn light" onclick="loadAttendanceTeachers()">Reload Staff</button></div>
-          <div id="attendanceCards" class="teacher-list"><div class="empty">Click Reload Staff to load teachers.</div></div>
-          <div class="quick-actions" style="margin-top:14px"><button class="btn light" onclick="goStep(2)">Back</button><button class="btn big" onclick="buildSummary();goStep(4)">Review</button></div>
-        </div>
+            <div id="step2" class="hidden">
+              <h3>Upload Attendance Register Photos</h3>
+              <p class="note">Upload one or more photos of the school attendance register. Camera upload is supported on mobile.</p>
+              <div class="upload-box">
+                <input id="registerImagesInput" type="file" accept="image/*" capture="environment" multiple onchange="previewRegisterImages()">
+                <p class="note">Selected images will be stored in Google Drive by Year → Month → School Code.</p>
+                <button class="btn light" onclick="clearRegisterImages()">Clear Photos</button>
+              </div>
+              <div id="registerImagePreview" class="preview"></div>
+              <div class="quickbar">
+                <button class="btn light" onclick="goStep(1)">Back</button>
+                <button class="btn" onclick="goStep(3)">Next: Fill Staff Attendance</button>
+              </div>
+            </div>
 
-        <div id="panel4" class="wizard-panel">
-          <h3>Review Attendance</h3><div id="attendanceSummary" class="summary-grid"></div>
-          <div class="quick-actions" style="margin-top:14px"><button class="btn light" onclick="goStep(3)">Back</button><button id="saveAttendanceBtn" class="btn success big" onclick="saveAttendance()">Save Attendance</button></div>
+            <div id="step3" class="hidden">
+              <div class="screen-head">
+                <div>
+                  <h3>Fill Staff Attendance</h3>
+                  <p class="note">Use + and − buttons. This is easier than typing numbers.</p>
+                </div>
+                <button class="btn light" onclick="loadAttendanceTeachers()">Reload Staff</button>
+              </div>
+              <div id="teacherCards" class="teacher-grid"></div>
+              <div class="quickbar">
+                <button class="btn light" onclick="goStep(2)">Back</button>
+                <button class="btn" onclick="goStep(4)">Next: Review</button>
+              </div>
+            </div>
+
+            <div id="step4" class="hidden">
+              <h3>Review & Submit</h3>
+              <p class="note">Please review the summary before submitting.</p>
+              <div id="attendanceSummary" class="summary-box"></div>
+              <button class="btn success" onclick="saveAttendance()">Submit Attendance</button>
+              <button class="btn light" onclick="goStep(3)">Back</button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div id="salaryScreen" class="screen card hidden">
-        <div class="screen-head"><h2>Salary Sheet</h2><button class="btn light" onclick="showHome()">Back</button></div><div id="salaryMessage"></div>
-        <div class="tile-grid"><div class="tile" onclick="downloadSchoolSheet()"><div class="icon">📄</div><div class="title">Download School Salary Sheet</div><div class="desc">Download PDF for selected month.</div></div><div class="tile" onclick="loadDashboard();showMessage('salaryMessage','Salary summary refreshed successfully.',true)"><div class="icon">📊</div><div class="title">Salary Summary</div><div class="desc">View gross salary, deductions and net salary.</div></div><div class="tile admin-only" onclick="showMessage('salaryMessage','Generate salary action is available in backend. Connect this tile if needed.',false)"><div class="icon">⚙️</div><div class="title">Generate Salary</div><div class="desc">Admin tool for monthly salary generation.</div></div></div>
+      <div id="employeesScreen" class="screen hidden">
+        <div class="screen-head">
+          <h2>👥 Employees</h2>
+          <button class="btn light" onclick="showHome()">Back</button>
+        </div>
+        <div id="employeeMessage"></div>
+        <button class="btn light" onclick="loadEmployees()">Load Employees</button>
+        <div class="table-wrap" style="margin-top:14px">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>School</th><th>Designation</th><th>Salary</th><th>Status</th></tr></thead>
+            <tbody id="employeesBody"></tbody>
+          </table>
+        </div>
       </div>
 
-      <div id="payslipsScreen" class="screen card hidden">
-        <div class="screen-head"><h2>Teacher Payslips</h2><button class="btn light" onclick="showHome()">Back</button></div>
-        <div class="toolbar"><div class="left"><button class="btn" onclick="loadPayslipTeachers()">Load Payslips</button></div></div>
-        <div class="table-wrap"><table><thead><tr><th>Employee ID</th><th>Name</th><th>School</th><th>Designation</th><th>Net Salary</th><th>Action</th></tr></thead><tbody id="payslipsBody"><tr><td colspan="6" class="empty">No data loaded.</td></tr></tbody></table></div>
+      <div id="salaryScreen" class="screen hidden">
+        <div class="screen-head">
+          <h2>💰 Salary Management</h2>
+          <button class="btn light" onclick="showHome()">Back</button>
+        </div>
+        <div id="salaryMessage"></div>
+        <div class="grid">
+          <div class="action" onclick="downloadSchoolSheet()"><div class="ico">📄</div><h3>Download Salary Sheet</h3><p>Download school-wise salary PDF for the selected month.</p></div>
+          <div class="action admin-action"><div class="ico">⚙️</div><h3>Generate Salary</h3><p>Available when backend action is added for Admin.</p></div>
+          <div class="action admin-action"><div class="ico">📚</div><h3>Combined Admin PDF</h3><p>Available when backend action is added for Admin.</p></div>
+        </div>
       </div>
 
-      <div id="employeesScreen" class="screen card hidden">
-        <div class="screen-head"><h2>Employees</h2><button class="btn light" onclick="showHome()">Back</button></div><div id="employeeMessage"></div>
-        <button class="btn" onclick="loadEmployees()">Load Employees</button>
-        <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>ID</th><th>Name</th><th>School</th><th>Designation</th><th>Basic Salary</th><th>Status</th></tr></thead><tbody id="employeesBody"><tr><td colspan="6" class="empty">No data loaded.</td></tr></tbody></table></div>
+      <div id="payslipsScreen" class="screen hidden">
+        <div class="screen-head">
+          <h2>📄 Teacher Payslips</h2>
+          <button class="btn light" onclick="showHome()">Back</button>
+        </div>
+        <button class="btn light" onclick="loadPayslipTeachers()">Load Payslips</button>
+        <div class="table-wrap" style="margin-top:14px">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>School</th><th>Designation</th><th>Net Salary</th><th>Download</th></tr></thead>
+            <tbody id="payslipsBody"></tbody>
+          </table>
+        </div>
       </div>
 
-      <div id="monthScreen" class="screen card hidden admin-only-screen"><div class="screen-head"><h2>Month Control</h2><button class="btn light" onclick="showHome()">Back</button></div><p class="hint">Admin area for active month, lock and unlock controls.</p><div class="message info">Backend functions exist. Add router actions if you want these buttons to perform live updates.</div></div>
-      <div id="usersScreen" class="screen card hidden admin-only-screen"><div class="screen-head"><h2>User Management</h2><button class="btn light" onclick="showHome()">Back</button></div><p class="hint">Admin area for principal and user accounts.</p></div>
-      <div id="auditScreen" class="screen card hidden admin-only-screen"><div class="screen-head"><h2>Audit Log</h2><button class="btn light" onclick="showHome()">Back</button></div><p class="hint">Audit log can be displayed here after adding a backend list API.</p></div>
+      <div id="monthScreen" class="screen hidden admin-only-screen">
+        <div class="screen-head"><h2>🔒 Month Control</h2><button class="btn light" onclick="showHome()">Back</button></div>
+        <p class="note">This screen is ready for Admin. Connect lock/unlock actions when backend routes are enabled.</p>
+      </div>
+
+      <div id="usersScreen" class="screen hidden admin-only-screen">
+        <div class="screen-head"><h2>👤 Users</h2><button class="btn light" onclick="showHome()">Back</button></div>
+        <p class="note">User management UI placeholder. Backend users API can be connected here.</p>
+      </div>
+
+      <div id="auditScreen" class="screen hidden admin-only-screen">
+        <div class="screen-head"><h2>📝 Audit Log</h2><button class="btn light" onclick="showHome()">Back</button></div>
+        <p class="note">Audit log UI placeholder. Backend audit API can be connected here.</p>
+      </div>
     </div>
   </div>
 
@@ -124,43 +329,229 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzMZW9R_tggbjzHEDGw6U5t6EiFQXEQChoC_5NqgPoIGfSfqRxKqG3z3PeVBu_de1aWjQ/exec";
     let currentUser = null;
     let cachedTeachers = [];
+    let currentStep = 1;
+
     function $(id){return document.getElementById(id)}
-    function showMessage(id,text,ok=false,type=''){const el=$(id);if(!el)return;if(!text){el.innerHTML='';return}el.innerHTML=`<div class="message ${ok?'ok':''} ${type}">${escapeHtml(text)}</div>`}
-    function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-    function money(n){return 'Rs. '+Number(n||0).toLocaleString('en-PK')}
-    function getMonth(){return $('monthInput').value||'2026-05'}
-    function isAdmin(){return currentUser&&String(currentUser.role).toLowerCase()==='admin'}
-    function isPrincipal(){return currentUser&&String(currentUser.role).toLowerCase()==='principal'}
-    async function callApi(action,params={}){const query=new URLSearchParams({action,...params});const res=await fetch(`${API_URL}?${query.toString()}`);return await res.json()}
-    async function callPost(payload){const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});return await res.json()}
+    function escapeHtml(v){return String(v ?? "").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]))}
+    function money(n){return "Rs. "+Number(n||0).toLocaleString("en-PK")}
+    function getMonth(){return $("monthInput").value || "2026-05"}
+    function isAdmin(){return currentUser && String(currentUser.role||"").toLowerCase()==="admin"}
+    function showMessage(id,text,ok=false,bad=false){
+      const el=$(id); if(!el)return;
+      if(!text){el.innerHTML="";return}
+      el.innerHTML=`<div class="message ${ok?"ok":""} ${bad?"bad":""}">${escapeHtml(text)}</div>`;
+    }
+    async function callApi(action,params={}){
+      const q=new URLSearchParams({action,...params});
+      const res=await fetch(`${API_URL}?${q.toString()}`);
+      return await res.json();
+    }
+    async function callPost(payload){
+      const res=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)});
+      return await res.json();
+    }
 
-    async function login(){showMessage('loginMessage','');const username=$('usernameInput').value.trim();const password=$('passwordInput').value.trim();if(!username)return showMessage('loginMessage','Username is required.');if(!password)return showMessage('loginMessage','Password is required.');try{const result=await callApi('login',{username,password});if(!result.success)return showMessage('loginMessage',result.message||'Invalid username or password.');currentUser=result.user;localStorage.setItem('ibfsUser',JSON.stringify(currentUser));renderAfterLogin();showMessage('mainMessage','Login successful.',true);await refreshHome()}catch(err){showMessage('loginMessage','Connection failed. Please check internet or deployment URL.')}}
-    function renderAfterLogin(){$('loginView').classList.add('hidden');$('portalView').classList.remove('hidden');$('attendanceMonthInput').value=getMonth();renderUser();renderTiles();updateRoleVisibility();showHome()}
-    function renderUser(){$('userInfo').classList.remove('hidden');$('userInfo').innerHTML=`<span>${escapeHtml(currentUser.username||'User')}</span><span class="role-badge">${escapeHtml(currentUser.role||'')}</span><span>School: ${escapeHtml(currentUser.schoolCode||'All')}</span>`}
-    function logout(){localStorage.removeItem('ibfsUser');currentUser=null;$('portalView').classList.add('hidden');$('loginView').classList.remove('hidden');$('userInfo').classList.add('hidden');showMessage('loginMessage','Logged out successfully.',true)}
-    function updateRoleVisibility(){document.querySelectorAll('.admin-only').forEach(el=>el.style.display=isAdmin()?'block':'none');document.querySelectorAll('.admin-only-screen').forEach(el=>{if(!isAdmin())el.classList.add('hidden')})}
-    function renderTiles(){const principal=[['attendanceScreen','📋','Fill Attendance','Upload register images and fill staff attendance.'],['salaryScreen','📄','Download Salary Sheet','Download current month school salary PDF.'],['payslipsScreen','🧾','Teacher Payslips','View teachers and download payslips.'],['employeesScreen','🧑‍🏫','Staff List','View school staff list.']];const admin=[['employeesScreen','🧑‍🏫','Employees','View all employees.'],['attendanceScreen','📋','Attendance','Attendance entry and review.'],['salaryScreen','💰','Salary Management','Salary sheets, PDFs and summary.'],['payslipsScreen','🧾','Payslips','Teacher payslip downloads.'],['monthScreen','🔒','Month Control','Active month, lock and unlock.'],['usersScreen','👥','Users','Manage users and principals.'],['auditScreen','📝','Audit Log','System activity history.']];const tiles=isAdmin()?admin:principal;$('dashboardTitle').textContent=isAdmin()?'Admin Dashboard':'Principal Dashboard';$('portalTiles').innerHTML=tiles.map(t=>`<div class="tile" onclick="openScreen('${t[0]}')"><div class="icon">${t[1]}</div><div class="title">${t[2]}</div><div class="desc">${t[3]}</div></div>`).join('')}
-    function hideAllScreens(){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));$('homeScreen').classList.add('hidden')}function showHome(){hideAllScreens();$('homeScreen').classList.remove('hidden');showMessage('mainMessage','')}function openScreen(id){hideAllScreens();$(id).classList.remove('hidden');if(id==='employeesScreen')loadEmployees();if(id==='attendanceScreen'){syncAttendanceMonth();loadAttendanceTeachers()}if(id==='payslipsScreen')loadPayslipTeachers()}
-    async function refreshHome(){await loadDashboard()}async function loadDashboard(){if(!currentUser)return;try{const u=currentUser.username;const result=await callApi('myDashboard',{email:u,username:u,month:getMonth()});if(!result.success)return showMessage('mainMessage',result.message||'Dashboard failed.');const d=result.dashboard||{};const cards=[];if(result.role==='Admin')cards.push(['Total Schools',d.totalSchools||0]);cards.push(['Total Staff',d.totalEmployees||0],['Gross Salary',money(d.grossSalary)],['Deductions',money(d.totalDeductions)],['Deduction Days',d.totalDeductionDays||0],['Net Salary',money(d.netSalary)]);$('dashboardCards').innerHTML=cards.map(c=>`<div class="metric"><div class="label">${c[0]}</div><div class="value">${c[1]}</div></div>`).join('')}catch(err){showMessage('mainMessage','Dashboard could not be loaded. Please try again.')}}
-    async function loadTeachersCommon(){const u=currentUser.username;const result=await callApi('myTeachers',{email:u,username:u,month:getMonth()});if(!result.success)throw new Error(result.message||'Teacher list could not be loaded.');cachedTeachers=result.teachers||[];return cachedTeachers}
-    async function loadEmployees(){try{const rows=await loadTeachersCommon();$('employeesBody').innerHTML=rows.length?rows.map(t=>`<tr><td>${escapeHtml(t.employeeId)}</td><td>${escapeHtml(t.employeeName)}</td><td>${escapeHtml(t.schoolCode)}</td><td>${escapeHtml(t.designation)}</td><td>${money(t.basicSalary)}</td><td>Active</td></tr>`).join(''):'<tr><td colspan="6" class="empty">No employees found.</td></tr>'}catch(e){showMessage('employeeMessage',e.message)}}
+    async function login(){
+      showMessage("loginMessage","");
+      const username=$("usernameInput").value.trim();
+      const password=$("passwordInput").value.trim();
+      if(!username)return showMessage("loginMessage","Username is required.",false,true);
+      if(!password)return showMessage("loginMessage","Password is required.",false,true);
+      try{
+        showMessage("loginMessage","Checking login...",true);
+        const result=await callApi("login",{username,password});
+        if(!result.success)return showMessage("loginMessage",result.message||"Invalid username or password.",false,true);
+        currentUser=result.user || {};
+        if(!currentUser.username) currentUser.username=username;
+        localStorage.setItem("ibfsUser",JSON.stringify(currentUser));
+        renderAfterLogin();
+        await refreshHome();
+      }catch(e){
+        showMessage("loginMessage","API connection failed. Please check deployment URL.",false,true);
+      }
+    }
+    function logout(){
+      localStorage.removeItem("ibfsUser"); currentUser=null;
+      $("portalView").classList.add("hidden"); $("loginView").classList.remove("hidden"); $("userInfo").classList.add("hidden");
+    }
+    function renderAfterLogin(){
+      $("loginView").classList.add("hidden"); $("portalView").classList.remove("hidden");
+      renderUser(); renderTiles(); updateRoleVisibility(); showHome();
+    }
+    function renderUser(){
+      $("userInfo").classList.remove("hidden");
+      $("userInfo").innerHTML=`<span>${escapeHtml(currentUser.username||"User")}</span><span class="badge">${escapeHtml(currentUser.role||"User")}</span><span>School: ${escapeHtml(currentUser.schoolCode||"All")}</span>`;
+      $("dashboardTitle").textContent = isAdmin() ? "Admin Dashboard" : "Principal Dashboard";
+    }
+    function updateRoleVisibility(){
+      document.querySelectorAll(".admin-only-screen").forEach(el=>{ if(!isAdmin()) el.classList.add("hidden") });
+      document.querySelectorAll(".admin-action").forEach(el=>{ el.style.display = isAdmin() ? "block" : "none" });
+    }
+    function renderTiles(){
+      const principal=[
+        ["attendanceScreen","📋","Fill Attendance","Upload register photos and fill staff attendance."],
+        ["salaryScreen","📄","Download Salary Sheet","Download your school salary sheet PDF."],
+        ["payslipsScreen","🧾","Teacher Payslips","Download teacher-wise payslips."],
+        ["employeesScreen","👥","Staff List","View your school staff list."]
+      ];
+      const admin=[
+        ["employeesScreen","👥","Employees","View employees and staff data."],
+        ["attendanceScreen","📋","Attendance","Review or enter school attendance."],
+        ["salaryScreen","💰","Salary Management","Salary sheets, PDFs and summary."],
+        ["payslipsScreen","🧾","Payslips","Teacher payslip downloads."],
+        ["monthScreen","🔒","Month Control","Active month, lock and unlock."],
+        ["usersScreen","👤","Users","Admin and principal users."],
+        ["auditScreen","📝","Audit Log","System activity logs."]
+      ];
+      const tiles=isAdmin()?admin:principal;
+      $("portalTiles").innerHTML=tiles.map(t=>`<div class="action" onclick="openScreen('${t[0]}')"><div class="ico">${t[1]}</div><h3>${t[2]}</h3><p>${t[3]}</p></div>`).join("");
+    }
+    function hideAllScreens(){document.querySelectorAll(".screen").forEach(s=>s.classList.add("hidden")); $("homeScreen").classList.add("hidden")}
+    function showHome(){hideAllScreens(); $("homeScreen").classList.remove("hidden"); showMessage("mainMessage","")}
+    function openScreen(id){
+      hideAllScreens(); $(id).classList.remove("hidden");
+      if(id==="employeesScreen") loadEmployees();
+      if(id==="attendanceScreen"){ $("attMonthInput").value=getMonth(); goStep(1); loadAttendanceTeachers(); }
+      if(id==="payslipsScreen") loadPayslipTeachers();
+    }
+    async function refreshHome(){ await loadDashboard(); }
 
-    function syncAttendanceMonth(){$('monthInput').value=$('attendanceMonthInput').value||getMonth()}function goStep(n){if(n===3){const files=Array.from($('registerImagesInput').files||[]);if(!files.length)return showMessage('attendanceMessage','Please upload at least one register image.')}for(let i=1;i<=4;i++){const active=i===n;$('panel'+i).classList.toggle('active',active);$('step'+i).classList.toggle('active',active);$('step'+i).classList.toggle('done',i<n)}showMessage('attendanceMessage','')}
-    async function loadAttendanceTeachers(){try{const rows=await loadTeachersCommon();$('attendanceCards').innerHTML=rows.length?rows.map(t=>teacherCard(t)).join(''):'<div class="empty">No staff found for selected month.</div>'}catch(e){showMessage('attendanceMessage',e.message)}}
-    function teacherCard(t){return `<div class="teacher-card" data-employee="${escapeHtml(t.employeeId)}"><div class="teacher-top"><div><div class="teacher-name">${escapeHtml(t.employeeName)}</div><div class="teacher-meta">${escapeHtml(t.employeeId)} • ${escapeHtml(t.designation||'Staff')}</div></div><div class="role-badge">${escapeHtml(t.schoolCode||'')}</div></div><div class="counter-grid">${counter('Absent','absent',t.absent||0)}${counter('CL','cl',t.cl||0)}${counter('Medical Leave','medical',t.medicalLeave||0)}${counter('Without Pay','wpl',t.withoutPayLeave||0)}</div><div class="remarks"><input class="att-remarks" placeholder="Remarks (optional)"></div></div>`}
-    function counter(label,cls,val){return `<div class="counter"><div class="counter-title">${label}</div><div class="counter-control"><button class="round" onclick="changeCount(this,-1)">−</button><span class="num att-${cls}">${Number(val||0)}</span><button class="round" onclick="changeCount(this,1)">+</button></div></div>`}
-    function changeCount(btn,delta){const span=btn.parentElement.querySelector('.num');span.textContent=Math.max(0,Number(span.textContent||0)+delta)}
-    async function previewRegisterImages(){const files=Array.from($('registerImagesInput').files||[]);$('registerImagePreview').innerHTML=files.map((f,i)=>`<div class="preview"><img id="regPreview_${i}" alt="Register image"><div>${escapeHtml(f.name)}</div></div>`).join('');files.forEach((file,i)=>{const r=new FileReader();r.onload=()=>{const img=$('regPreview_'+i);if(img)img.src=r.result};r.readAsDataURL(file)})}
-    function fileToBase64Object(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve({fileName:file.name,mimeType:file.type||'image/jpeg',base64:String(r.result||'')});r.onerror=()=>reject(r.error);r.readAsDataURL(file)})}
-    function collectTeachers(){return Array.from(document.querySelectorAll('.teacher-card')).map(card=>({employeeId:card.dataset.employee||'',absent:card.querySelector('.att-absent')?.textContent||0,cl:card.querySelector('.att-cl')?.textContent||0,medicalLeave:card.querySelector('.att-medical')?.textContent||0,withoutPayLeave:card.querySelector('.att-wpl')?.textContent||0,remarks:card.querySelector('.att-remarks')?.value||''})).filter(t=>t.employeeId)}
-    function buildSummary(){const teachers=collectTeachers();const files=Array.from($('registerImagesInput').files||[]);const totals=teachers.reduce((a,t)=>{a.absent+=Number(t.absent);a.cl+=Number(t.cl);a.med+=Number(t.medicalLeave);a.wpl+=Number(t.withoutPayLeave);return a},{absent:0,cl:0,med:0,wpl:0});$('attendanceSummary').innerHTML=`<div class="summary-box"><div class="label">Total Staff</div><div class="value">${teachers.length}</div></div><div class="summary-box"><div class="label">Register Images</div><div class="value">${files.length}</div></div><div class="summary-box"><div class="label">Absent Days</div><div class="value">${totals.absent}</div></div><div class="summary-box"><div class="label">CL</div><div class="value">${totals.cl}</div></div><div class="summary-box"><div class="label">Medical Leave</div><div class="value">${totals.med}</div></div><div class="summary-box"><div class="label">Without Pay</div><div class="value">${totals.wpl}</div></div>`}
-    async function saveAttendance(){if(!currentUser)return showMessage('attendanceMessage','Please login first.');const teachers=collectTeachers();if(!teachers.length)return showMessage('attendanceMessage','No staff records found.');const files=Array.from($('registerImagesInput').files||[]);if(!files.length)return showMessage('attendanceMessage','Please upload at least one register image.');try{$('saveAttendanceBtn').disabled=true;showMessage('attendanceMessage','Saving attendance. Please wait...',true,'info');const registerImages=await Promise.all(files.map(fileToBase64Object));const result=await callPost({action:'submitAttendance',username:currentUser.username,email:currentUser.username,month:getMonth(),schoolCode:currentUser.schoolCode||'',registerImages,teachers});if(!result.success)return showMessage('attendanceMessage',result.message||'Attendance save failed.');showMessage('attendanceMessage',`Attendance submitted successfully. ${result.totalTeachers||teachers.length} staff records saved. ${(result.registerPhotoURLs||[]).length||registerImages.length} register images uploaded.`,true);$('registerImagesInput').value='';$('registerImagePreview').innerHTML='';await loadAttendanceTeachers();buildSummary()}catch(e){showMessage('attendanceMessage','Unexpected error occurred. Please contact administrator.')}finally{$('saveAttendanceBtn').disabled=false}}
+    async function loadDashboard(){
+      if(!currentUser)return;
+      try{
+        showMessage("mainMessage","Loading dashboard...",true);
+        const username=currentUser.username;
+        const result=await callApi("myDashboard",{email:username,username,month:getMonth()});
+        if(!result.success){ $("dashboardCards").innerHTML=""; return showMessage("mainMessage",result.message||"Dashboard loading failed.",false,true); }
+        const d=result.dashboard||{};
+        const cards=[];
+        cards.push(["📅","Current Month", getMonth()]);
+        if(isAdmin()) cards.push(["🏫","Total Schools", d.totalSchools ?? 0]);
+        cards.push(["👥","Total Staff", d.totalEmployees ?? 0]);
+        cards.push(["💰","Gross Salary", money(d.grossSalary)]);
+        cards.push(["💸","Net Salary", money(d.netSalary)]);
+        cards.push(["📉","Deductions", money(d.totalDeductions)]);
+        $("dashboardCards").innerHTML=cards.map(c=>`<div class="kpi"><div class="ico">${c[0]}</div><div class="label">${c[1]}</div><div class="value">${c[2]}</div></div>`).join("");
+        showMessage("mainMessage","Dashboard loaded successfully.",true);
+      }catch(e){ showMessage("mainMessage","Dashboard API error. Please contact administrator.",false,true); }
+    }
 
-    async function loadPayslipTeachers(){try{const rows=await loadTeachersCommon();$('payslipsBody').innerHTML=rows.length?rows.map(t=>`<tr><td>${escapeHtml(t.employeeId)}</td><td>${escapeHtml(t.employeeName)}</td><td>${escapeHtml(t.schoolCode)}</td><td>${escapeHtml(t.designation)}</td><td><strong>${money(t.netSalary)}</strong></td><td><button class="btn success" onclick="downloadPayslip('${escapeHtml(t.employeeId)}')">Download</button></td></tr>`).join(''):'<tr><td colspan="6" class="empty">No payslips found.</td></tr>'}catch(e){showMessage('mainMessage',e.message)}}
-    function monthNameYear(){const [year,monthNo]=getMonth().split('-');const names=['January','February','March','April','May','June','July','August','September','October','November','December'];return{year,monthName:names[Number(monthNo)-1]||'May'}}
-    function downloadPayslip(employeeId){const {year,monthName}=monthNameYear();window.open(`${API_URL}?action=downloadPayslip&employeeId=${encodeURIComponent(employeeId)}&month=${encodeURIComponent(monthName)}&year=${encodeURIComponent(year)}`,'_blank')}
-    function downloadSchoolSheet(){if(!currentUser)return;window.open(`${API_URL}?action=downloadSchoolSheet&username=${encodeURIComponent(currentUser.username)}&month=${encodeURIComponent(getMonth())}`,'_blank')}
-    window.onload=()=>{const saved=localStorage.getItem('ibfsUser');if(saved){try{currentUser=JSON.parse(saved);renderAfterLogin();refreshHome()}catch(e){localStorage.removeItem('ibfsUser')}}}
+    async function loadTeachersCommon(){
+      const username=currentUser.username;
+      const result=await callApi("myTeachers",{email:username,username,month:getMonth()});
+      if(!result.success) throw new Error(result.message||"Staff list loading failed.");
+      cachedTeachers=result.teachers||[];
+      return cachedTeachers;
+    }
+    async function loadEmployees(){
+      try{
+        const rows=await loadTeachersCommon();
+        $("employeesBody").innerHTML=rows.map(t=>`<tr><td>${escapeHtml(t.employeeId)}</td><td>${escapeHtml(t.employeeName)}</td><td>${escapeHtml(t.schoolCode)}</td><td>${escapeHtml(t.designation)}</td><td>${money(t.basicSalary)}</td><td>Active</td></tr>`).join("");
+      }catch(e){showMessage("employeeMessage",e.message,false,true)}
+    }
+
+    function goStep(step){
+      currentStep=step;
+      [1,2,3,4].forEach(n=>{ $("step"+n).classList.toggle("hidden",n!==step); $("tab"+n).classList.toggle("active",n===step); });
+      if(step===4) renderAttendanceSummary();
+    }
+    function syncMonthFromAttendance(){ $("monthInput").value=$("attMonthInput").value; }
+    async function loadAttendanceTeachers(){
+      try{
+        showMessage("attendanceMessage","Loading staff list...",true);
+        const rows=await loadTeachersCommon();
+        $("teacherCards").innerHTML=rows.map(t=>teacherCard(t)).join("");
+        showMessage("attendanceMessage",`Staff list loaded. Total staff: ${rows.length}.`,true);
+      }catch(e){ showMessage("attendanceMessage",e.message,false,true); }
+    }
+    function teacherCard(t){
+      return `<div class="teacher-card" data-employee="${escapeHtml(t.employeeId)}">
+        <div class="teacher-top"><div><div class="teacher-name">${escapeHtml(t.employeeName)}</div><div class="teacher-desig">${escapeHtml(t.designation||"Staff")} • ${escapeHtml(t.employeeId)}</div></div><div class="badge">${escapeHtml(t.schoolCode||"")}</div></div>
+        ${counter("Absent","absent",t.absent||0)}
+        ${counter("CL","cl",t.cl||0)}
+        ${counter("Medical Leave","medical",t.medicalLeave||0)}
+        ${counter("Without Pay","wpl",t.withoutPayLeave||0)}
+        <label style="margin-top:10px">Remarks</label><input class="att-remarks" placeholder="Optional remarks">
+      </div>`;
+    }
+    function counter(label,cls,val){
+      return `<div class="counter-row"><div class="counter-label">${label}</div><div class="counter"><button onclick="changeCount(this,'${cls}',-1)">−</button><input class="att-${cls}" type="number" min="0" value="${val}"><button onclick="changeCount(this,'${cls}',1)">+</button></div></div>`;
+    }
+    function changeCount(btn,cls,delta){
+      const input=btn.closest(".teacher-card").querySelector(".att-"+cls);
+      input.value=Math.max(0,Number(input.value||0)+delta);
+    }
+    function selectedImageCount(){ return Array.from($("registerImagesInput").files||[]).length; }
+    async function previewRegisterImages(){
+      const files=Array.from($("registerImagesInput").files||[]);
+      $("registerImagePreview").innerHTML=files.map((f,i)=>`<div class="preview-card"><img id="regPrev${i}"><div class="note">${escapeHtml(f.name)}</div></div>`).join("");
+      files.forEach((file,i)=>{const r=new FileReader();r.onload=()=>{$("regPrev"+i).src=r.result};r.readAsDataURL(file);});
+    }
+    function clearRegisterImages(){ $("registerImagesInput").value=""; $("registerImagePreview").innerHTML=""; }
+    function getAttendanceTeachersPayload(){
+      return Array.from(document.querySelectorAll("#teacherCards .teacher-card")).map(card=>({
+        employeeId:card.dataset.employee,
+        absent:card.querySelector(".att-absent").value||0,
+        cl:card.querySelector(".att-cl").value||0,
+        medicalLeave:card.querySelector(".att-medical").value||0,
+        withoutPayLeave:card.querySelector(".att-wpl").value||0,
+        remarks:card.querySelector(".att-remarks").value||""
+      })).filter(t=>t.employeeId);
+    }
+    function renderAttendanceSummary(){
+      const teachers=getAttendanceTeachersPayload();
+      const absent=teachers.reduce((s,t)=>s+Number(t.absent||0),0);
+      $("attendanceSummary").innerHTML=`
+        <div class="summary-item">School Code<b>${escapeHtml(currentUser.schoolCode||"All")}</b></div>
+        <div class="summary-item">Staff Records<b>${teachers.length}</b></div>
+        <div class="summary-item">Register Photos<b>${selectedImageCount()}</b></div>
+        <div class="summary-item">Total Absent<b>${absent}</b></div>
+        <div class="summary-item">Month<b>${escapeHtml(getMonth())}</b></div>
+        <div class="summary-item">Status<b>Ready</b></div>`;
+    }
+    function fileToBase64Object(file){
+      return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve({fileName:file.name,mimeType:file.type||"image/jpeg",base64:String(r.result||"")});r.onerror=()=>reject(r.error);r.readAsDataURL(file);});
+    }
+    async function saveAttendance(){
+      if(!currentUser)return showMessage("attendanceMessage","Please login first.",false,true);
+      const teachers=getAttendanceTeachersPayload();
+      if(!teachers.length)return showMessage("attendanceMessage","No staff records found. Please load staff list.",false,true);
+      if(!isAdmin() && !currentUser.schoolCode)return showMessage("attendanceMessage","School code not found for this user. Please contact administrator.",false,true);
+      try{
+        showMessage("attendanceMessage","Uploading photos and saving attendance...",true);
+        const files=Array.from($("registerImagesInput").files||[]);
+        const registerImages=await Promise.all(files.map(fileToBase64Object));
+        const result=await callPost({action:"submitAttendance",username:currentUser.username,email:currentUser.username,month:getMonth(),schoolCode:currentUser.schoolCode||"",registerImages,teachers});
+        if(!result.success)return showMessage("attendanceMessage",result.message||"Attendance save failed.",false,true);
+        showMessage("attendanceMessage",`Attendance saved successfully. Staff records: ${result.totalTeachers||teachers.length}. Images uploaded: ${(result.registerPhotoURLs||[]).length}.`,true);
+        clearRegisterImages();
+        await loadAttendanceTeachers();
+        goStep(4);
+      }catch(e){ showMessage("attendanceMessage","Unexpected error occurred while saving attendance. Please contact administrator.",false,true); }
+    }
+
+    async function loadPayslipTeachers(){
+      try{
+        const rows=await loadTeachersCommon();
+        $("payslipsBody").innerHTML=rows.map(t=>`<tr><td>${escapeHtml(t.employeeId)}</td><td>${escapeHtml(t.employeeName)}</td><td>${escapeHtml(t.schoolCode)}</td><td>${escapeHtml(t.designation)}</td><td><b>${money(t.netSalary)}</b></td><td><button class="btn success" onclick="downloadPayslip('${escapeHtml(t.employeeId)}')">Download</button></td></tr>`).join("");
+      }catch(e){showMessage("mainMessage",e.message,false,true)}
+    }
+    function monthNameYear(){
+      const [year,m]=getMonth().split("-");
+      const names=["January","February","March","April","May","June","July","August","September","October","November","December"];
+      return {year,monthName:names[Number(m)-1]||"May"};
+    }
+    function downloadPayslip(employeeId){
+      const {year,monthName}=monthNameYear();
+      window.open(`${API_URL}?action=downloadPayslip&employeeId=${encodeURIComponent(employeeId)}&month=${encodeURIComponent(monthName)}&year=${encodeURIComponent(year)}`,"_blank");
+    }
+    function downloadSchoolSheet(){
+      if(!currentUser)return;
+      const url=`${API_URL}?action=downloadSchoolSheet&username=${encodeURIComponent(currentUser.username)}&month=${encodeURIComponent(getMonth())}`;
+      window.open(url,"_blank");
+      showMessage("salaryMessage","Salary sheet download request sent.",true);
+    }
+    window.onload=()=>{const saved=localStorage.getItem("ibfsUser"); if(saved){currentUser=JSON.parse(saved); renderAfterLogin(); refreshHome();}};
   </script>
 </body>
 </html>
