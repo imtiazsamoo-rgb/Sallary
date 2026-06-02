@@ -134,6 +134,18 @@
     .summary-item{background:#f8fafc;border-radius:18px;padding:16px;border:1px solid var(--line)}
     .summary-item b{display:block;font-size:24px;margin-top:5px}
     .quickbar{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+
+    .photo-actions{display:flex;gap:8px;margin-top:8px}
+    .preview-card button{width:100%;padding:8px;border-radius:12px;background:#fee2e2;color:#991b1b;font-weight:900}
+    .approval-grid{display:grid;grid-template-columns:320px 1fr;gap:18px}
+    .approval-card{background:#f8fafc;border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:12px}
+    .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:12px}
+    .photo-card{border:1px solid var(--line);border-radius:16px;padding:8px;background:#fff}
+    .photo-card img{width:100%;height:150px;object-fit:cover;border-radius:12px;cursor:pointer}
+    .modal{position:fixed;inset:0;background:rgba(15,23,42,.82);z-index:9999;display:grid;place-items:center;padding:20px}
+    .modal img{max-width:96vw;max-height:88vh;border-radius:18px;background:#fff}
+    .modal .close{position:fixed;top:18px;right:18px;background:#fff;color:#111827;border-radius:999px;padding:12px 16px;font-weight:950}
+    .required-note{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:16px;padding:12px;font-weight:800;margin:10px 0}
     @media(max-width:1000px){
       .kpis,.grid{grid-template-columns:repeat(2,1fr)}
       .wizard{grid-template-columns:1fr}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
@@ -220,6 +232,7 @@
             <div id="step1">
               <h3>Select Month</h3>
               <p class="note">Confirm the month for attendance entry.</p>
+              <div id="attendanceStatusBox"></div>
               <label>Month</label>
               <input id="attMonthInput" type="month" value="2026-05" onchange="syncMonthFromAttendance()">
               <button class="btn" onclick="goStep(2)">Next: Upload Photos</button>
@@ -228,6 +241,7 @@
             <div id="step2" class="hidden">
               <h3>Upload Attendance Register Photos</h3>
               <p class="note">Upload one or more photos of the school attendance register. Camera upload is supported on mobile.</p>
+              <div class="required-note">Attendance register photo is compulsory. Attendance cannot be saved without at least one photo.</div>
               <div class="upload-box">
                 <input id="registerImagesInput" type="file" accept="image/*" capture="environment" multiple onchange="previewRegisterImages()">
                 <p class="note">Selected images will be stored in Google Drive by Year → Month → School Code.</p>
@@ -247,6 +261,12 @@
                   <p class="note">Use + and − buttons. This is easier than typing numbers.</p>
                 </div>
                 <button class="btn light" onclick="loadAttendanceTeachers()">Reload Staff</button>
+              </div>
+              <div class="quickbar">
+                <input id="teacherSearch" placeholder="Search teacher by name or ID..." onkeyup="filterTeachers()" style="max-width:360px">
+                <button class="btn light" onclick="markAllPresent()">All Present</button>
+                <button class="btn light" onclick="saveAttendanceDraft()">Save Draft</button>
+                <button class="btn warning" onclick="restoreAttendanceDraft()">Restore Draft</button>
               </div>
               <div id="teacherCards" class="teacher-grid"></div>
               <div class="quickbar">
@@ -308,6 +328,35 @@
         </div>
       </div>
 
+
+      <div id="approvalScreen" class="screen hidden admin-only-screen">
+        <div class="screen-head">
+          <div>
+            <h2>✅ Attendance Approval & Photo Verification</h2>
+            <p class="note">Admin can verify attendance register photos before approving attendance.</p>
+          </div>
+          <button class="btn light" onclick="showHome()">Back</button>
+        </div>
+        <div id="approvalMessage"></div>
+        <div class="approval-grid">
+          <div class="approval-card">
+            <label>Month</label>
+            <input id="approvalMonthInput" type="month" value="2026-05">
+            <label>School Code</label>
+            <input id="approvalSchoolInput" placeholder="Example: 230101013">
+            <button class="btn block" onclick="loadAttendanceApproval()">Load Attendance</button>
+          </div>
+          <div>
+            <div id="approvalSummary" class="summary-box"></div>
+            <div id="approvalPhotos" class="photo-grid"></div>
+            <div id="approvalActions" class="quickbar hidden">
+              <button class="btn success" onclick="approveAttendance()">Approve Attendance</button>
+              <button class="btn danger" onclick="rejectAttendance()">Reject / Need Correction</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="monthScreen" class="screen hidden admin-only-screen">
         <div class="screen-head"><h2>🔒 Month Control</h2><button class="btn light" onclick="showHome()">Back</button></div>
         <p class="note">This screen is ready for Admin. Connect lock/unlock actions when backend routes are enabled.</p>
@@ -330,6 +379,8 @@
     let currentUser = null;
     let cachedTeachers = [];
     let currentStep = 1;
+    let selectedRegisterFiles = [];
+    const MAX_REGISTER_PHOTOS = 20;
 
     function $(id){return document.getElementById(id)}
     function escapeHtml(v){return String(v ?? "").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]))}
@@ -380,7 +431,9 @@
     }
     function renderUser(){
       $("userInfo").classList.remove("hidden");
-      $("userInfo").innerHTML=`<span>${escapeHtml(currentUser.username||"User")}</span><span class="badge">${escapeHtml(currentUser.role||"User")}</span><span>School: ${escapeHtml(currentUser.schoolCode||"All")}</span>`;
+      const role = currentUser.role || "User";
+      const school = currentUser.schoolCode || (isAdmin() ? "All Schools" : "Not Set");
+      $("userInfo").innerHTML=`<span>${escapeHtml(currentUser.username||"User")}</span><span class="badge">${escapeHtml(role)}</span><span>School Code: ${escapeHtml(school)}</span>`;
       $("dashboardTitle").textContent = isAdmin() ? "Admin Dashboard" : "Principal Dashboard";
     }
     function updateRoleVisibility(){
@@ -397,6 +450,7 @@
       const admin=[
         ["employeesScreen","👥","Employees","View employees and staff data."],
         ["attendanceScreen","📋","Attendance","Review or enter school attendance."],
+        ["approvalScreen","✅","Attendance Approval","Verify register photos and approve attendance."],
         ["salaryScreen","💰","Salary Management","Salary sheets, PDFs and summary."],
         ["payslipsScreen","🧾","Payslips","Teacher payslip downloads."],
         ["monthScreen","🔒","Month Control","Active month, lock and unlock."],
@@ -411,8 +465,9 @@
     function openScreen(id){
       hideAllScreens(); $(id).classList.remove("hidden");
       if(id==="employeesScreen") loadEmployees();
-      if(id==="attendanceScreen"){ $("attMonthInput").value=getMonth(); goStep(1); loadAttendanceTeachers(); }
+      if(id==="attendanceScreen"){ $("attMonthInput").value=getMonth(); goStep(1); checkAttendanceStatus(); loadAttendanceTeachers(); }
       if(id==="payslipsScreen") loadPayslipTeachers();
+      if(id==="approvalScreen"){ $("approvalMonthInput").value=getMonth(); loadAttendanceApproval(); }
     }
     async function refreshHome(){ await loadDashboard(); }
 
@@ -455,12 +510,14 @@
       [1,2,3,4].forEach(n=>{ $("step"+n).classList.toggle("hidden",n!==step); $("tab"+n).classList.toggle("active",n===step); });
       if(step===4) renderAttendanceSummary();
     }
-    function syncMonthFromAttendance(){ $("monthInput").value=$("attMonthInput").value; }
+    function syncMonthFromAttendance(){ $("monthInput").value=$("attMonthInput").value; checkAttendanceStatus(); }
     async function loadAttendanceTeachers(){
       try{
         showMessage("attendanceMessage","Loading staff list...",true);
         const rows=await loadTeachersCommon();
         $("teacherCards").innerHTML=rows.map(t=>teacherCard(t)).join("");
+        attachAttendanceDraftListeners();
+        restoreAttendanceDraft(false);
         showMessage("attendanceMessage",`Staff list loaded. Total staff: ${rows.length}.`,true);
       }catch(e){ showMessage("attendanceMessage",e.message,false,true); }
     }
@@ -481,13 +538,25 @@
       const input=btn.closest(".teacher-card").querySelector(".att-"+cls);
       input.value=Math.max(0,Number(input.value||0)+delta);
     }
-    function selectedImageCount(){ return Array.from($("registerImagesInput").files||[]).length; }
+    function selectedImageCount(){ return selectedRegisterFiles.length; }
     async function previewRegisterImages(){
-      const files=Array.from($("registerImagesInput").files||[]);
-      $("registerImagePreview").innerHTML=files.map((f,i)=>`<div class="preview-card"><img id="regPrev${i}"><div class="note">${escapeHtml(f.name)}</div></div>`).join("");
-      files.forEach((file,i)=>{const r=new FileReader();r.onload=()=>{$("regPrev"+i).src=r.result};r.readAsDataURL(file);});
+      const newFiles=Array.from($("registerImagesInput").files||[]);
+      selectedRegisterFiles = selectedRegisterFiles.concat(newFiles);
+      if(selectedRegisterFiles.length > MAX_REGISTER_PHOTOS){
+        selectedRegisterFiles = selectedRegisterFiles.slice(0, MAX_REGISTER_PHOTOS);
+        showMessage("attendanceMessage",`Maximum ${MAX_REGISTER_PHOTOS} register photos allowed. Extra photos were ignored.`,false,true);
+      }
+      renderRegisterImagePreview();
+      $("registerImagesInput").value="";
     }
-    function clearRegisterImages(){ $("registerImagesInput").value=""; $("registerImagePreview").innerHTML=""; }
+    function renderRegisterImagePreview(){
+      const files=selectedRegisterFiles;
+      $("registerImagePreview").innerHTML=files.map((f,i)=>`<div class="preview-card"><img id="regPrev${i}"><div class="note">${escapeHtml(f.name)}</div><button onclick="removeRegisterImage(${i})">Remove</button></div>`).join("");
+      files.forEach((file,i)=>{const r=new FileReader();r.onload=()=>{$("regPrev"+i).src=r.result};r.readAsDataURL(file);});
+      renderAttendanceSummary();
+    }
+    function removeRegisterImage(index){ selectedRegisterFiles.splice(index,1); renderRegisterImagePreview(); }
+    function clearRegisterImages(){ selectedRegisterFiles=[]; $("registerImagesInput").value=""; $("registerImagePreview").innerHTML=""; renderAttendanceSummary(); }
     function getAttendanceTeachersPayload(){
       return Array.from(document.querySelectorAll("#teacherCards .teacher-card")).map(card=>({
         employeeId:card.dataset.employee,
@@ -499,18 +568,26 @@
       })).filter(t=>t.employeeId);
     }
     function renderAttendanceSummary(){
+      if(!$("attendanceSummary")) return;
       const teachers=getAttendanceTeachersPayload();
       const absent=teachers.reduce((s,t)=>s+Number(t.absent||0),0);
+      const cl=teachers.reduce((s,t)=>s+Number(t.cl||0),0);
+      const med=teachers.reduce((s,t)=>s+Number(t.medicalLeave||0),0);
+      const wpl=teachers.reduce((s,t)=>s+Number(t.withoutPayLeave||0),0);
+      const photos=selectedImageCount();
       $("attendanceSummary").innerHTML=`
         <div class="summary-item">School Code<b>${escapeHtml(currentUser.schoolCode||"All")}</b></div>
         <div class="summary-item">Staff Records<b>${teachers.length}</b></div>
-        <div class="summary-item">Register Photos<b>${selectedImageCount()}</b></div>
+        <div class="summary-item">Register Photos<b>${photos}</b></div>
         <div class="summary-item">Total Absent<b>${absent}</b></div>
+        <div class="summary-item">Total CL<b>${cl}</b></div>
+        <div class="summary-item">Medical Leave<b>${med}</b></div>
+        <div class="summary-item">Without Pay<b>${wpl}</b></div>
         <div class="summary-item">Month<b>${escapeHtml(getMonth())}</b></div>
-        <div class="summary-item">Status<b>Ready</b></div>`;
+        <div class="summary-item">Status<b>${photos>0?"Ready":"Photo Required"}</b></div>`;
     }
     function fileToBase64Object(file){
-      return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve({fileName:file.name,mimeType:file.type||"image/jpeg",base64:String(r.result||"")});r.onerror=()=>reject(r.error);r.readAsDataURL(file);});
+      return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>{const dataUrl=String(r.result||"");resolve({fileName:file.name,mimeType:file.type||"image/jpeg",base64:dataUrl.includes(",")?dataUrl.split(",")[1]:dataUrl});};r.onerror=()=>reject(r.error);r.readAsDataURL(file);});
     }
     async function saveAttendance(){
       if(!currentUser)return showMessage("attendanceMessage","Please login first.",false,true);
@@ -518,16 +595,97 @@
       if(!teachers.length)return showMessage("attendanceMessage","No staff records found. Please load staff list.",false,true);
       if(!isAdmin() && !currentUser.schoolCode)return showMessage("attendanceMessage","School code not found for this user. Please contact administrator.",false,true);
       try{
+        const files=selectedRegisterFiles;
+        if(files.length===0) return showMessage("attendanceMessage","Attendance register photo is compulsory. Please upload at least one register photo.",false,true);
+        if(files.length>MAX_REGISTER_PHOTOS) return showMessage("attendanceMessage",`Maximum ${MAX_REGISTER_PHOTOS} register photos allowed.`,false,true);
+        saveAttendanceDraft();
         showMessage("attendanceMessage","Uploading photos and saving attendance...",true);
-        const files=Array.from($("registerImagesInput").files||[]);
         const registerImages=await Promise.all(files.map(fileToBase64Object));
         const result=await callPost({action:"submitAttendance",username:currentUser.username,email:currentUser.username,month:getMonth(),schoolCode:currentUser.schoolCode||"",registerImages,teachers});
         if(!result.success)return showMessage("attendanceMessage",result.message||"Attendance save failed.",false,true);
         showMessage("attendanceMessage",`Attendance saved successfully. Staff records: ${result.totalTeachers||teachers.length}. Images uploaded: ${(result.registerPhotoURLs||[]).length}.`,true);
         clearRegisterImages();
+        clearAttendanceDraft();
         await loadAttendanceTeachers();
         goStep(4);
       }catch(e){ showMessage("attendanceMessage","Unexpected error occurred while saving attendance. Please contact administrator.",false,true); }
+    }
+
+    function filterTeachers(){
+      const q=String($("teacherSearch")?.value||"").toLowerCase();
+      document.querySelectorAll("#teacherCards .teacher-card").forEach(card=>{card.style.display=card.innerText.toLowerCase().includes(q)?"":"none";});
+    }
+    function markAllPresent(){
+      document.querySelectorAll("#teacherCards input[type='number']").forEach(i=>i.value=0);
+      saveAttendanceDraft();
+      renderAttendanceSummary();
+      showMessage("attendanceMessage","All staff marked present. Please upload register photo before submitting.",true);
+    }
+    function attendanceDraftKey(){ return `ibfsAttendanceDraft_${currentUser?.username||"user"}_${getMonth()}_${currentUser?.schoolCode||"all"}`; }
+    function saveAttendanceDraft(){
+      const draft={month:getMonth(),schoolCode:currentUser?.schoolCode||"",teachers:getAttendanceTeachersPayload(),savedAt:new Date().toISOString()};
+      localStorage.setItem(attendanceDraftKey(),JSON.stringify(draft));
+      showMessage("attendanceMessage","Draft saved on this device. Photos must be selected again before final submission.",true);
+    }
+    function clearAttendanceDraft(){ localStorage.removeItem(attendanceDraftKey()); }
+    function restoreAttendanceDraft(showMsg=true){
+      const raw=localStorage.getItem(attendanceDraftKey()); if(!raw) return;
+      try{
+        const draft=JSON.parse(raw); const map={}; (draft.teachers||[]).forEach(t=>map[t.employeeId]=t);
+        document.querySelectorAll("#teacherCards .teacher-card").forEach(card=>{
+          const t=map[card.dataset.employee]; if(!t) return;
+          card.querySelector(".att-absent").value=t.absent||0; card.querySelector(".att-cl").value=t.cl||0; card.querySelector(".att-medical").value=t.medicalLeave||0; card.querySelector(".att-wpl").value=t.withoutPayLeave||0; card.querySelector(".att-remarks").value=t.remarks||"";
+        });
+        renderAttendanceSummary(); if(showMsg) showMessage("attendanceMessage","Draft restored. Please reselect register photos before submission.",true);
+      }catch(e){}
+    }
+    function attachAttendanceDraftListeners(){
+      document.querySelectorAll("#teacherCards input").forEach(el=>el.addEventListener("change",()=>{renderAttendanceSummary(); localStorage.setItem(attendanceDraftKey(),JSON.stringify({month:getMonth(),schoolCode:currentUser?.schoolCode||"",teachers:getAttendanceTeachersPayload(),savedAt:new Date().toISOString()}));}));
+    }
+    async function checkAttendanceStatus(){
+      if(!currentUser || !$("attendanceStatusBox")) return;
+      try{
+        const result=await callApi("getAttendanceStatus",{email:currentUser.username,username:currentUser.username,month:getMonth(),schoolCode:currentUser.schoolCode||""});
+        if(result && result.success){
+          const photos=(result.registerPhotoURLs||[]).length || Number(result.totalPhotos||0);
+          const msg=result.submitted?`Attendance already submitted. Staff: ${result.totalTeachers||0}, Photos: ${photos}, Status: ${result.status||"Submitted"}`:"No attendance submitted yet for this month.";
+          showMessage("attendanceStatusBox",msg,!result.submitted?false:true,!result.submitted?false:false);
+        }
+      }catch(e){ showMessage("attendanceStatusBox",""); }
+    }
+    function normalizePhotoUrls(v){
+      if(Array.isArray(v)) return v.filter(Boolean);
+      return String(v||"").split(/,|
+/).map(x=>x.trim()).filter(Boolean);
+    }
+    async function loadAttendanceApproval(){
+      if(!isAdmin()) return showMessage("approvalMessage","Only Admin can approve attendance.",false,true);
+      const month=$("approvalMonthInput").value||getMonth();
+      const schoolCode=($("approvalSchoolInput").value||"").trim();
+      if(!schoolCode) return showMessage("approvalMessage","Please enter school code.",false,true);
+      try{
+        showMessage("approvalMessage","Loading attendance and register photos...",true);
+        const result=await callApi("getAttendanceForApproval",{email:currentUser.username,username:currentUser.username,month,schoolCode});
+        if(!result.success) return showMessage("approvalMessage",result.message||"Attendance data not found.",false,true);
+        const photos=normalizePhotoUrls(result.registerPhotoURLs||result.photos||"");
+        $("approvalSummary").innerHTML=`<div class="summary-item">School Code<b>${escapeHtml(schoolCode)}</b></div><div class="summary-item">Month<b>${escapeHtml(month)}</b></div><div class="summary-item">Staff Records<b>${result.totalTeachers||0}</b></div><div class="summary-item">Register Photos<b>${photos.length}</b></div><div class="summary-item">Status<b>${escapeHtml(result.status||"Submitted")}</b></div>`;
+        $("approvalPhotos").innerHTML=photos.length?photos.map((u,i)=>`<div class="photo-card"><img src="${escapeHtml(u)}" onclick="openPhotoModal('${escapeHtml(u)}')"><div class="note">Photo ${i+1}</div><a class="btn light" style="width:100%;margin-top:8px;text-decoration:none" target="_blank" href="${escapeHtml(u)}">Open</a></div>`).join(""):`<div class="message bad">No register photos found. Approval should not be allowed.</div>`;
+        $("approvalActions").classList.toggle("hidden",photos.length===0);
+        showMessage("approvalMessage","Verify photos visually before approval.",true);
+      }catch(e){ showMessage("approvalMessage","Approval API is not connected yet. Add backend action: getAttendanceForApproval.",false,true); }
+    }
+    function openPhotoModal(url){
+      const div=document.createElement("div"); div.className="modal"; div.innerHTML=`<button class="close" onclick="this.parentElement.remove()">Close ✕</button><img src="${url}">`; document.body.appendChild(div);
+    }
+    async function approveAttendance(){ await submitApprovalStatus_("Approved"); }
+    async function rejectAttendance(){ await submitApprovalStatus_("Rejected"); }
+    async function submitApprovalStatus_(status){
+      const month=$("approvalMonthInput").value||getMonth(); const schoolCode=($("approvalSchoolInput").value||"").trim();
+      try{
+        const result=await callPost({action:"approveAttendance",email:currentUser.username,username:currentUser.username,month,schoolCode,status});
+        if(!result.success) return showMessage("approvalMessage",result.message||"Approval update failed.",false,true);
+        showMessage("approvalMessage",`Attendance ${status}.`,true); loadAttendanceApproval();
+      }catch(e){ showMessage("approvalMessage","Approval backend is not connected yet. Add doPost action: approveAttendance.",false,true); }
     }
 
     async function loadPayslipTeachers(){
