@@ -146,6 +146,13 @@
     .modal img{max-width:96vw;max-height:88vh;border-radius:18px;background:#fff}
     .modal .close{position:fixed;top:18px;right:18px;background:#fff;color:#111827;border-radius:999px;padding:12px 16px;font-weight:950}
     .required-note{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:16px;padding:12px;font-weight:800;margin:10px 0}
+
+    .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .file-note{font-size:13px;color:var(--muted);margin-top:-6px;margin-bottom:12px}
+    .status-pill{display:inline-block;border-radius:999px;padding:6px 10px;font-weight:900;background:#e2e8f0;color:#0f172a}
+    .status-pill.pending{background:#fff7ed;color:#9a3412}
+    .status-pill.approved{background:#ecfdf5;color:#166534}
+    .status-pill.rejected{background:#fef2f2;color:#991b1b}
     @media(max-width:1000px){
       .kpis,.grid{grid-template-columns:repeat(2,1fr)}
       .wizard{grid-template-columns:1fr}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
@@ -158,6 +165,7 @@
       .toolbar .left,.toolbar .right,.month{width:100%}.btn{width:100%}
       .steps{grid-template-columns:1fr}.step-tab{margin-bottom:0}
       .counter-row{grid-template-columns:1fr}.counter{justify-content:space-between}
+      .form-grid{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -329,6 +337,52 @@
       </div>
 
 
+
+      <div id="resignationScreen" class="screen hidden">
+        <div class="screen-head">
+          <div>
+            <h2>📄 Teacher Resignation</h2>
+            <p class="note">Principal can submit a teacher resignation request with resignation letter/photo. Photo or PDF is compulsory.</p>
+          </div>
+          <button class="btn light" onclick="showHome()">Back</button>
+        </div>
+        <div id="resignMessage"></div>
+        <div class="form-grid">
+          <div>
+            <label>Teacher</label>
+            <select id="resignEmployee"></select>
+          </div>
+          <div>
+            <label>Resign Date</label>
+            <input id="resignDate" type="date">
+          </div>
+        </div>
+        <label>Reason / Remarks</label>
+        <textarea id="resignReason" rows="4" placeholder="Write resignation reason or remarks..."></textarea>
+        <label>Upload Resignation Letter / Photo</label>
+        <input id="resignPhoto" type="file" accept="image/*,.pdf">
+        <div class="required-note">Resignation letter/photo is compulsory. Request cannot be submitted without it.</div>
+        <button class="btn danger" onclick="submitResignation()">Submit Resignation</button>
+      </div>
+
+      <div id="resignationApprovalScreen" class="screen hidden admin-only-screen">
+        <div class="screen-head">
+          <div>
+            <h2>📑 Resignation Approval</h2>
+            <p class="note">Admin can verify resignation letter/photo and approve or reject the request.</p>
+          </div>
+          <button class="btn light" onclick="showHome()">Back</button>
+        </div>
+        <div id="resignApprovalMessage"></div>
+        <button class="btn light" onclick="loadResignationApprovals()">Load Pending Resignations</button>
+        <div class="table-wrap" style="margin-top:14px">
+          <table>
+            <thead><tr><th>Employee ID</th><th>Name</th><th>School</th><th>Resign Date</th><th>Reason</th><th>Letter</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="resignationApprovalBody"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div id="approvalScreen" class="screen hidden admin-only-screen">
         <div class="screen-head">
           <div>
@@ -443,14 +497,15 @@
     function renderTiles(){
       const principal=[
         ["attendanceScreen","📋","Fill Attendance","Upload register photos and fill staff attendance."],
+        ["resignationScreen","📄","Teacher Resignation","Submit resignation with letter/photo."],
         ["salaryScreen","📄","Download Salary Sheet","Download your school salary sheet PDF."],
         ["payslipsScreen","🧾","Teacher Payslips","Download teacher-wise payslips."],
         ["employeesScreen","👥","Staff List","View your school staff list."]
       ];
       const admin=[
         ["employeesScreen","👥","Employees","View employees and staff data."],
-        ["attendanceScreen","📋","Attendance","Review or enter school attendance."],
         ["approvalScreen","✅","Attendance Approval","Verify register photos and approve attendance."],
+        ["resignationApprovalScreen","📑","Resignation Approval","Verify resignation letters and approve requests."],
         ["salaryScreen","💰","Salary Management","Salary sheets, PDFs and summary."],
         ["payslipsScreen","🧾","Payslips","Teacher payslip downloads."],
         ["monthScreen","🔒","Month Control","Active month, lock and unlock."],
@@ -465,9 +520,18 @@
     function openScreen(id){
       hideAllScreens(); $(id).classList.remove("hidden");
       if(id==="employeesScreen") loadEmployees();
-      if(id==="attendanceScreen"){ $("attMonthInput").value=getMonth(); goStep(1); checkAttendanceStatus(); loadAttendanceTeachers(); }
+      if(id==="attendanceScreen"){
+        if(isAdmin()){
+          showMessage("mainMessage","Admin cannot fill attendance. Please use Attendance Approval.",false,true);
+          showHome();
+          return;
+        }
+        $("attMonthInput").value=getMonth(); goStep(1); checkAttendanceStatus(); loadAttendanceTeachers();
+      }
+      if(id==="resignationScreen") loadResignationTeachers();
       if(id==="payslipsScreen") loadPayslipTeachers();
       if(id==="approvalScreen"){ $("approvalMonthInput").value=getMonth(); loadAttendanceApproval(); }
+      if(id==="resignationApprovalScreen") loadResignationApprovals();
     }
     async function refreshHome(){ await loadDashboard(); }
 
@@ -657,7 +721,7 @@
       if(Array.isArray(v)) return v.filter(Boolean);
       return String(v||"").split(/,|\n/).map(x=>x.trim()).filter(Boolean);
     }
-    async function loadAttendanceApproval(){
+        async function loadAttendanceApproval(){
       if(!isAdmin()) return showMessage("approvalMessage","Only Admin can approve attendance.",false,true);
       const month=$("approvalMonthInput").value||getMonth();
       const schoolCode=($("approvalSchoolInput").value||"").trim();
@@ -674,17 +738,120 @@
       }catch(e){ showMessage("approvalMessage","Approval API is not connected yet. Add backend action: getAttendanceForApproval.",false,true); }
     }
     function openPhotoModal(url){
-      const div=document.createElement("div"); div.className="modal"; div.innerHTML=`<button class="close" onclick="this.parentElement.remove()">Close ✕</button><img src="${url}">`; document.body.appendChild(div);
+      const isPdf=String(url).toLowerCase().includes(".pdf");
+      const div=document.createElement("div");
+      div.className="modal";
+      div.innerHTML=`<button class="close" onclick="this.parentElement.remove()">Close ✕</button>${isPdf?`<iframe src="${url}" style="width:92vw;height:86vh;border:0;border-radius:18px;background:#fff"></iframe>`:`<img src="${url}">`}`;
+      document.body.appendChild(div);
     }
     async function approveAttendance(){ await submitApprovalStatus_("Approved"); }
     async function rejectAttendance(){ await submitApprovalStatus_("Rejected"); }
     async function submitApprovalStatus_(status){
       const month=$("approvalMonthInput").value||getMonth(); const schoolCode=($("approvalSchoolInput").value||"").trim();
       try{
-        const result=await callPost({action:"approveAttendance",email:currentUser.username,username:currentUser.username,month,schoolCode,status});
+        let payload={email:currentUser.username,username:currentUser.username,month,schoolCode};
+        if(status==="Rejected"){
+          const reason=prompt("Write rejection reason / correction note:") || "Rejected by Admin";
+          payload.action="rejectAttendance";
+          payload.reason=reason;
+          payload.rejectReason=reason;
+        }else{
+          payload.action="approveAttendance";
+        }
+        const result=await callPost(payload);
         if(!result.success) return showMessage("approvalMessage",result.message||"Approval update failed.",false,true);
         showMessage("approvalMessage",`Attendance ${status}.`,true); loadAttendanceApproval();
-      }catch(e){ showMessage("approvalMessage","Approval backend is not connected yet. Add doPost action: approveAttendance.",false,true); }
+      }catch(e){ showMessage("approvalMessage","Approval backend is not connected yet. Check approveAttendance / rejectAttendance routes.",false,true); }
+    }
+
+    async function loadResignationTeachers(){
+      try{
+        showMessage("resignMessage","Loading staff list...",true);
+        const rows=await loadTeachersCommon();
+        $("resignEmployee").innerHTML = rows.map(t=>`<option value="${escapeHtml(t.employeeId)}" data-name="${escapeHtml(t.employeeName)}" data-school="${escapeHtml(t.schoolCode)}">${escapeHtml(t.employeeName)} (${escapeHtml(t.employeeId)}) - ${escapeHtml(t.designation||"Staff")}</option>`).join("");
+        if(!$("resignDate").value) $("resignDate").value = new Date().toISOString().slice(0,10);
+        showMessage("resignMessage",`Staff loaded. Select teacher and upload resignation letter/photo.`,true);
+      }catch(e){ showMessage("resignMessage",e.message,false,true); }
+    }
+    async function submitResignation(){
+      if(!currentUser) return showMessage("resignMessage","Please login first.",false,true);
+      if(isAdmin()) return showMessage("resignMessage","Admin cannot submit resignation from Principal screen.",false,true);
+      const employeeId=$("resignEmployee").value;
+      const resignDate=$("resignDate").value;
+      const reason=$("resignReason").value.trim();
+      const file=($("resignPhoto").files||[])[0];
+      if(!employeeId) return showMessage("resignMessage","Please select teacher.",false,true);
+      if(!resignDate) return showMessage("resignMessage","Please select resign date.",false,true);
+      if(!reason) return showMessage("resignMessage","Please write resignation reason/remarks.",false,true);
+      if(!file) return showMessage("resignMessage","Resignation letter/photo is compulsory.",false,true);
+      try{
+        showMessage("resignMessage","Uploading resignation letter/photo...",true);
+        const letter=await fileToBase64Object(file);
+        const selected=$("resignEmployee").selectedOptions[0];
+        const result=await callPost({
+          action:"submitResignation",
+          email:currentUser.username,
+          username:currentUser.username,
+          schoolCode:currentUser.schoolCode||selected?.dataset.school||"",
+          employeeId,
+          employeeName:selected?.dataset.name||"",
+          resignDate,
+          reason,
+          resignationImage:letter,
+          resignationPhoto:letter,
+          resignationFile:letter
+        });
+        if(!result.success) return showMessage("resignMessage",result.message||"Resignation submit failed.",false,true);
+        $("resignReason").value=""; $("resignPhoto").value="";
+        showMessage("resignMessage","Resignation request submitted successfully. Waiting for Admin approval.",true);
+      }catch(e){ showMessage("resignMessage","Unexpected error while submitting resignation. Please contact administrator.",false,true); }
+    }
+    function getResignationRows(result){
+      return result.rows || result.resignations || result.data || result.items || [];
+    }
+    async function loadResignationApprovals(){
+      if(!isAdmin()) return showMessage("resignApprovalMessage","Only Admin can review resignations.",false,true);
+      try{
+        showMessage("resignApprovalMessage","Loading pending resignations...",true);
+        const result=await callApi("getPendingResignations",{email:currentUser.username,username:currentUser.username,month:getMonth()});
+        if(!result.success) return showMessage("resignApprovalMessage",result.message||"No resignation data found.",false,true);
+        const rows=getResignationRows(result);
+        $("resignationApprovalBody").innerHTML = rows.length ? rows.map(r=>resignationApprovalRow(r)).join("") : `<tr><td colspan="8">No pending resignations found.</td></tr>`;
+        showMessage("resignApprovalMessage",`Loaded ${rows.length} resignation request(s).`,true);
+      }catch(e){ showMessage("resignApprovalMessage","Resignation approval API is not connected yet. Check getPendingResignations route.",false,true); }
+    }
+    function resignationApprovalRow(r){
+      const employeeId=r.EmployeeID||r.employeeId||"";
+      const name=r.EmployeeName||r.employeeName||"";
+      const school=r.SchoolCode||r.schoolCode||"";
+      const date=r.ResignDate||r.resignDate||"";
+      const reason=r.ResignReason||r.reason||r.Remarks||"";
+      const photo=r.ResignPhotoURL||r.resignPhotoURL||r.photoUrl||r.fileUrl||"";
+      const status=String(r.ResignApprovalStatus||r.status||"Pending");
+      const safePhoto=escapeHtml(photo);
+      return `<tr>
+        <td>${escapeHtml(employeeId)}</td>
+        <td>${escapeHtml(name)}</td>
+        <td>${escapeHtml(school)}</td>
+        <td>${escapeHtml(date)}</td>
+        <td>${escapeHtml(reason)}</td>
+        <td>${photo ? `<button class="btn light" onclick="openPhotoModal('${safePhoto}')">View</button> <a class="btn light" target="_blank" style="text-decoration:none" href="${safePhoto}">Open</a>` : "No file"}</td>
+        <td><span class="status-pill ${escapeHtml(status.toLowerCase())}">${escapeHtml(status)}</span></td>
+        <td><button class="btn success" onclick="approveResignation('${escapeHtml(employeeId)}')">Approve</button> <button class="btn danger" onclick="rejectResignation('${escapeHtml(employeeId)}')">Reject</button></td>
+      </tr>`;
+    }
+    async function approveResignation(employeeId){ await submitResignationDecision_("approveResignation",employeeId); }
+    async function rejectResignation(employeeId){
+      const reason=prompt("Write rejection reason:") || "Rejected by Admin";
+      await submitResignationDecision_("rejectResignation",employeeId,reason);
+    }
+    async function submitResignationDecision_(action,employeeId,reason=""){
+      try{
+        const result=await callPost({action,email:currentUser.username,username:currentUser.username,employeeId,reason,rejectReason:reason});
+        if(!result.success) return showMessage("resignApprovalMessage",result.message||"Action failed.",false,true);
+        showMessage("resignApprovalMessage",`Resignation ${action==="approveResignation"?"approved":"rejected"}.`,true);
+        loadResignationApprovals();
+      }catch(e){ showMessage("resignApprovalMessage","Resignation decision API is not connected yet.",false,true); }
     }
 
     async function loadPayslipTeachers(){
