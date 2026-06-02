@@ -655,8 +655,7 @@
     }
     function normalizePhotoUrls(v){
       if(Array.isArray(v)) return v.filter(Boolean);
-      return String(v||"").split(/,|
-/).map(x=>x.trim()).filter(Boolean);
+      return String(v||"").split(/,|\n/).map(x=>x.trim()).filter(Boolean);
     }
     async function loadAttendanceApproval(){
       if(!isAdmin()) return showMessage("approvalMessage","Only Admin can approve attendance.",false,true);
