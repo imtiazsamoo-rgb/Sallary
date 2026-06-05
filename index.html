@@ -343,6 +343,7 @@ function renderPage() {
   if (state.activePage === "Teachers" || state.activePage === "Employees") return renderTeachers();
   if (state.activePage === "Payslips") return renderPayslips();
   if (state.activePage === "Salary Sheet" || state.activePage === "School Salary Sheets") return renderSalarySheet();
+  if (state.activePage === "Combined Reports") return renderCombinedReports();
   if (state.activePage === "Salary Generation") return renderSalaryGeneration();
   renderPlaceholder(state.activePage);
 }
@@ -881,25 +882,232 @@ async function rejectTeacherAttendance(employeeId) {
 }
 
 async function renderPayslips() {
-  setHeader("Payslips", "View teacher payslips");
-  if (isAdmin()) { content.innerHTML = `<div class="card">Admin payslip list will be connected after employee/school filter API.</div>`; return; }
+  setHeader("Payslips", "View and download teacher payslips in PDF");
+
+  if (isAdmin()) {
+    content.innerHTML = `
+      <div class="card">
+        <h3>Admin Payslips</h3>
+        <p class="muted">Admin payslip filter will be connected after Employee Management. Principal payslip PDF is active.</p>
+      </div>`;
+    return;
+  }
+
   content.innerHTML = `<div class="card">Loading...</div>`;
+
   try {
     const rows = await loadPrincipalTeachers();
-    content.innerHTML = `<div class="card"><div class="table-wrap"><table><thead><tr><th>S#</th><th>Employee ID</th><th>Name</th><th>Designation</th><th>Net Salary</th><th>Action</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(r.employeeId)}</td><td>${escapeHtml(r.employeeName)}</td><td>${escapeHtml(r.designation)}</td><td><b>${money(r.netSalary)}</b></td><td><button class="btn primary" onclick="viewPayslip('${escapeHtml(r.employeeId)}')">View</button></td></tr>`).join("")}</tbody></table></div><div id="payslipBox" style="margin-top:16px"></div></div>`;
-  } catch (err) { content.innerHTML = showMessage(err.message, "bad"); }
+
+    content.innerHTML = `
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>S#</th>
+                <th>Employee ID</th>
+                <th>Name</th>
+                <th>Designation</th>
+                <th>Net Salary</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.map((r,i)=>`
+                <tr>
+                  <td>${i+1}</td>
+                  <td>${escapeHtml(r.employeeId)}</td>
+                  <td>${escapeHtml(r.employeeName)}</td>
+                  <td>${escapeHtml(r.designation)}</td>
+                  <td><b>${money(r.netSalary)}</b></td>
+                  <td>
+                    <button class="btn primary" onclick="viewPayslip('${escapeHtml(r.employeeId)}')">View</button>
+                    <button class="btn success" onclick="downloadPayslipPdf('${escapeHtml(r.employeeId)}')">PDF</button>
+                  </td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+        <div id="payslipBox" style="margin-top:16px"></div>
+      </div>`;
+  } catch (err) {
+    content.innerHTML = showMessage(err.message, "bad");
+  }
 }
 
 async function viewPayslip(employeeId) {
   const result = await apiGet("payslip", { email:state.user.email, month:getMonth(), employeeId });
   if (!result.success) { alert(result.message || "Payslip not found"); return; }
   const p = result.payslip;
-  $("payslipBox").innerHTML = `<div class="card"><h3>Payslip: ${escapeHtml(p.EmployeeName)}</h3><div class="table-wrap"><table><tbody><tr><th>Employee ID</th><td>${escapeHtml(p.EmployeeID)}</td></tr><tr><th>Designation</th><td>${escapeHtml(p.Designation)}</td></tr><tr><th>Basic Salary</th><td>${money(p.BasicSalary)}</td></tr><tr><th>Absent</th><td>${p.Absent}</td></tr><tr><th>CL</th><td>${p.CL}</td></tr><tr><th>Medical Leave</th><td>${p.MedicalLeave}</td></tr><tr><th>Without Pay Leave</th><td>${p.WithoutPayLeave}</td></tr><tr><th>Total Deduction Days</th><td>${p.TotalDeductionDays}</td></tr><tr><th>Deduction Amount</th><td>${money(p.DeductionAmount)}</td></tr><tr><th>Net Salary</th><td><b>${money(p.NetSalary)}</b></td></tr></tbody></table></div></div>`;
+  $("payslipBox").innerHTML = `<div class="card"><h3>Payslip: ${escapeHtml(p.EmployeeName)}</h3><div class="table-wrap"><table><tbody><tr><th>Employee ID</th><td>${escapeHtml(p.EmployeeID)}</td></tr><tr><th>Designation</th><td>${escapeHtml(p.Designation)}</td></tr><tr><th>Basic Salary</th><td>${money(p.BasicSalary)}</td></tr><tr><th>Absent</th><td>${p.Absent}</td></tr><tr><th>CL</th><td>${p.CL}</td></tr><tr><th>Medical Leave</th><td>${p.MedicalLeave}</td></tr><tr><th>Without Pay Leave</th><td>${p.WithoutPayLeave}</td></tr><tr><th>Total Deduction Days</th><td>${p.TotalDeductionDays}</td></tr><tr><th>Deduction Amount</th><td>${money(p.DeductionAmount)}</td></tr><tr><th>Net Salary</th><td><b>${money(p.NetSalary)}</b></td></tr></tbody></table></div><div class="actions"><button class="btn success" onclick="downloadPayslipPdf('${escapeHtml(employeeId)}')">Download Payslip PDF</button></div></div>`;
 }
 
-function renderSalarySheet() {
-  setHeader(state.activePage, "Salary table and PDF download will be connected here");
-  content.innerHTML = `<div class="card"><p>Salary Sheet module is ready. Next backend route: schoolSalary / PDF download.</p></div>`;
+async function renderSalarySheet() {
+  if (isAdmin()) {
+    setHeader("School Salary Sheets", "Download school-wise salary sheet PDF");
+    content.innerHTML = `<div class="card">Loading schools...</div>`;
+
+    try {
+      const result = await apiGet("dashboard", { email: state.user.email, month: getMonth() });
+      if (!result.success) {
+        content.innerHTML = showMessage(result.message || "School list loading failed.", "bad");
+        return;
+      }
+
+      const schools = result.schoolWise || [];
+      content.innerHTML = `
+        <div class="card">
+          <h3>School-wise Salary PDF</h3>
+          <p class="muted">Selected month: <b>${escapeHtml(getMonth())}</b></p>
+
+          <label>Select School</label>
+          <select id="pdfSchoolCode">
+            <option value="">-- Select School --</option>
+            ${schools.map(s => `<option value="${escapeHtml(s.schoolCode)}">${escapeHtml(s.schoolCode)} — Teachers: ${s.totalEmployees || 0} — Net: ${money(s.netSalary)}</option>`).join("")}
+          </select>
+
+          <div class="actions">
+            <button class="btn primary" onclick="downloadSchoolSalaryPdf()">Download School Salary PDF</button>
+          </div>
+          <div id="salaryPdfMsg"></div>
+        </div>`;
+    } catch (err) {
+      content.innerHTML = showMessage("School salary PDF screen loading failed.", "bad");
+    }
+    return;
+  }
+
+  setHeader("Salary Sheet", "Download my school salary sheet PDF");
+  content.innerHTML = `
+    <div class="card">
+      <h3>My School Salary Sheet PDF</h3>
+      <div class="summary-list">
+        <div class="summary-row"><span>Month</span><strong>${escapeHtml(getMonth())}</strong></div>
+        <div class="summary-row"><span>School Code</span><strong>${escapeHtml(state.user.schoolCode || "-")}</strong></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" onclick="downloadMySchoolSalaryPdf()">Download Salary Sheet PDF</button>
+      </div>
+      <div id="salaryPdfMsg"></div>
+    </div>`;
+}
+
+function renderCombinedReports() {
+  if (!isAdmin()) {
+    content.innerHTML = showMessage("Only Admin can access Combined Reports.", "bad");
+    return;
+  }
+
+  setHeader("Combined Reports", "Download full month salary report PDF for all schools");
+  content.innerHTML = `
+    <div class="card">
+      <h3>Combined Monthly Salary PDF</h3>
+      <div class="summary-list">
+        <div class="summary-row"><span>Month</span><strong>${escapeHtml(getMonth())}</strong></div>
+        <div class="summary-row"><span>Report Level</span><strong>All Schools Combined</strong></div>
+      </div>
+      <div class="actions">
+        <button class="btn success" onclick="downloadCombinedSalaryPdf()">Download Combined Monthly PDF</button>
+      </div>
+      <div id="combinedPdfMsg"></div>
+    </div>`;
+}
+
+function showPdfMessage(elementId, result, loadingText) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  if (loadingText) {
+    el.innerHTML = showMessage(loadingText, "ok");
+    return;
+  }
+
+  if (result && result.success && result.url) {
+    el.innerHTML = `
+      <div class="message ok">
+        ${escapeHtml(result.message || "PDF generated successfully.")}<br><br>
+        <a class="btn success" href="${escapeHtml(result.url)}" target="_blank" rel="noopener">
+          Open / Download PDF
+        </a>
+      </div>
+    `;
+    return;
+  }
+
+  el.innerHTML = showMessage(
+    result.message || "PDF generation failed.",
+    "bad"
+  );
+}
+
+async function downloadSchoolSalaryPdf() {
+  const schoolCode = String(document.getElementById("pdfSchoolCode")?.value || "").trim();
+  if (!schoolCode) {
+    alert("Please select school.");
+    return;
+  }
+
+  showPdfMessage("salaryPdfMsg", {}, "Generating school salary PDF...");
+  const result = await apiPost({
+    action: "generateSchoolSalaryPdf",
+    email: state.user.email,
+    month: getMonth(),
+    schoolCode: schoolCode
+  });
+
+  showPdfMessage("salaryPdfMsg", result);
+  if (result.success && result.url) window.open(result.url, "_blank");
+}
+
+async function downloadMySchoolSalaryPdf() {
+  showPdfMessage("salaryPdfMsg", {}, "Generating salary sheet PDF...");
+  const result = await apiPost({
+    action: "generateSchoolSalaryPdf",
+    email: state.user.email,
+    month: getMonth(),
+    schoolCode: state.user.schoolCode
+  });
+
+  showPdfMessage("salaryPdfMsg", result);
+  if (result.success && result.url) window.open(result.url, "_blank");
+}
+
+async function downloadCombinedSalaryPdf() {
+  showPdfMessage("combinedPdfMsg", {}, "Generating combined monthly PDF...");
+  const result = await apiPost({
+    action: "generateCombinedSalaryPdf",
+    email: state.user.email,
+    month: getMonth()
+  });
+
+  showPdfMessage("combinedPdfMsg", result);
+  if (result.success && result.url) window.open(result.url, "_blank");
+}
+
+async function downloadPayslipPdf(employeeId) {
+  const result = await apiPost({
+    action: "generatePayslipPdf",
+    email: state.user.email,
+    month: getMonth(),
+    employeeId: employeeId
+  });
+
+  if (result.success && result.url) {
+    const box = document.getElementById("payslipBox");
+    if (box) {
+      box.insertAdjacentHTML("beforeend", `
+        <div class="message ok">
+          ${escapeHtml(result.message || "Payslip PDF generated successfully.")}<br><br>
+          <a class="btn success" href="${escapeHtml(result.url)}" target="_blank" rel="noopener">
+            Open / Download Payslip PDF
+          </a>
+        </div>
+      `);
+    }
+    window.open(result.url, "_blank");
+  } else {
+    alert(result.message || "Payslip PDF generation failed.");
+  }
 }
 
 function renderSalaryGeneration() {
