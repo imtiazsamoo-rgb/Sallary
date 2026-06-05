@@ -1013,6 +1013,11 @@ function renderCombinedReports() {
     </div>`;
 }
 
+function getPdfUrl(result) {
+  if (!result) return "";
+  return result.downloadUrl || result.pdfUrl || result.url || result.fileUrl || result.webViewLink || "";
+}
+
 function showPdfMessage(elementId, result, loadingText) {
   const el = document.getElementById(elementId);
   if (!el) return;
@@ -1022,20 +1027,20 @@ function showPdfMessage(elementId, result, loadingText) {
     return;
   }
 
-  if (result && result.success && result.url) {
+  const pdfUrl = getPdfUrl(result);
+
+  if (result && result.success) {
     el.innerHTML = `
       <div class="message ok">
         ${escapeHtml(result.message || "PDF generated successfully.")}<br><br>
-        <a class="btn success" href="${escapeHtml(result.url)}" target="_blank" rel="noopener">
-          Open / Download PDF
-        </a>
+        ${pdfUrl ? `<a class="btn success" href="${escapeHtml(pdfUrl)}" target="_blank" rel="noopener">Open / Download PDF</a>` : `<span class="muted">PDF generated, but download link was not returned.</span>`}
       </div>
     `;
     return;
   }
 
   el.innerHTML = showMessage(
-    result.message || "PDF generation failed.",
+    (result && result.message) ? result.message : "PDF generation failed.",
     "bad"
   );
 }
@@ -1056,7 +1061,8 @@ async function downloadSchoolSalaryPdf() {
   });
 
   showPdfMessage("salaryPdfMsg", result);
-  if (result.success && result.url) window.open(result.url, "_blank");
+  const pdfUrl = getPdfUrl(result);
+  if (result.success && pdfUrl) window.open(pdfUrl, "_blank");
 }
 
 async function downloadMySchoolSalaryPdf() {
@@ -1069,7 +1075,8 @@ async function downloadMySchoolSalaryPdf() {
   });
 
   showPdfMessage("salaryPdfMsg", result);
-  if (result.success && result.url) window.open(result.url, "_blank");
+  const pdfUrl = getPdfUrl(result);
+  if (result.success && pdfUrl) window.open(pdfUrl, "_blank");
 }
 
 async function downloadCombinedSalaryPdf() {
@@ -1081,7 +1088,8 @@ async function downloadCombinedSalaryPdf() {
   });
 
   showPdfMessage("combinedPdfMsg", result);
-  if (result.success && result.url) window.open(result.url, "_blank");
+  const pdfUrl = getPdfUrl(result);
+  if (result.success && pdfUrl) window.open(pdfUrl, "_blank");
 }
 
 async function downloadPayslipPdf(employeeId) {
