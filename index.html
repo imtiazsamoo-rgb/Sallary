@@ -232,6 +232,14 @@ function escapeHtml(value) {
   }[c]));
 }
 
+function jsString(value) {
+  return String(value ?? "")
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, "")
+    .replace(/\n/g, "\\n");
+}
+
 function money(n) {
   return "Rs. " + Number(n || 0).toLocaleString("en-PK");
 }
@@ -660,27 +668,56 @@ async function renderAttendanceStatus() {
 }
 
 async function renderAttendanceApproval() {
-  setHeader("Attendance Approval", "Verify uploaded register photos and approve/reject attendance");
-  if (!isAdmin()) { content.innerHTML = showMessage("Only Admin can access this screen.", "bad"); return; }
+  setHeader("Attendance Approval", "Select school from dropdown and approve/reject teacher-wise attendance");
+  if (!isAdmin()) {
+    content.innerHTML = showMessage("Only Admin can access this screen.", "bad");
+    return;
+  }
+
   content.innerHTML = `<div class="card">Loading pending attendance...</div>`;
+
   try {
-    const result = await apiGet("attendanceForApproval", { email:state.user.email, month:getMonth(), status:"all" });
-    if (!result.success) { content.innerHTML = showMessage(result.message || "Approval list failed.", "bad"); return; }
+    const result = await apiGet("attendanceForApproval", {
+      email: state.user.email,
+      month: getMonth(),
+      status: "all"
+    });
+
+    if (!result.success) {
+      content.innerHTML = showMessage(result.message || "Approval list failed.", "bad");
+      return;
+    }
+
     const items = result.items || [];
-    content.innerHTML = `
-      <div class="approval-layout">
-        <div class="card">
-          <h3>Schools</h3>
-          <div class="approval-list">${items.length ? items.map((it,i)=>`
-            <div class="approval-item">
-              <div><b>${escapeHtml(it.schoolCode)}</b><br><small>${escapeHtml(it.month)} • Photos: ${(it.photos||[]).length} • Staff: ${it.totalTeachers || 0}</small><br>${statusBadge(it.approvalStatus)}</div>
-              <button class="btn primary" onclick="selectApproval(${i})">View</button>
-            </div>`).join("") : `<div class="message">No attendance records found for this month.</div>`}</div>
-        </div>
-        <div id="approvalDetail" class="card"><h3>Select a school</h3><p class="muted">Photos and attendance table will appear here.</p></div>
-      </div>`;
     window.__approvalItems = items;
-  } catch (err) { content.innerHTML = showMessage("Attendance approval API error.", "bad"); }
+    state.selectedApproval = null;
+
+    content.innerHTML = `
+      <div class="card">
+        <h3>Attendance Approval</h3>
+        <div class="form-grid">
+          <div>
+            <label>Select School</label>
+            <select id="approvalSchoolSelect" onchange="selectApproval(this.value)">
+              <option value="">-- Select School --</option>
+              ${items.map((it,i)=>`
+                <option value="${i}">
+                  ${escapeHtml(it.schoolCode)} — ${escapeHtml(it.month)} — ${escapeHtml(it.approvalStatus || "Pending")} — Staff: ${it.totalTeachers || 0}
+                </option>`).join("")}
+            </select>
+          </div>
+        </div>
+
+        ${items.length ? "" : `<div class="message">No attendance records found for this month.</div>`}
+
+        <div id="approvalDetail" style="margin-top:18px;">
+          <div class="message">Select a school from dropdown.</div>
+        </div>
+      </div>`;
+
+  } catch (err) {
+    content.innerHTML = showMessage("Attendance approval API error.", "bad");
+  }
 }
 
 function statusBadge(status) {
@@ -690,65 +727,155 @@ function statusBadge(status) {
   return `<span class="status ${cls}">${icon} ${escapeHtml(s)}</span>`;
 }
 
-function driveImageUrl(url) {
+function extractDriveFileId(url) {
   const text = String(url || "");
-
-  let id = "";
-
   let match = text.match(/\/file\/d\/([^/]+)/);
-  if (match) id = match[1];
+  if (match) return match[1];
 
   match = text.match(/\/d\/([^/]+)/);
-  if (!id && match) id = match[1];
+  if (match) return match[1];
 
   match = text.match(/[?&]id=([^&]+)/);
-  if (!id && match) id = match[1];
+  if (match) return match[1];
 
-  if (!id) return text;
+  match = text.match(/[-\w]{25,}/);
+  if (match) return match[0];
 
-  return "https://drive.google.com/uc?export=view&id=" + id;
+  return "";
+}
+
+function driveThumbnailUrl(url, size = "w200") {
+  const id = extractDriveFileId(url);
+  if (!id) return String(url || "");
+  return `https://drive.google.com/thumbnail?id=${id}&sz=${size}`;
+}
+
+function driveImageUrl(url) {
+  return driveThumbnailUrl(url, "w1000");
+}
+
+function renderApprovalPhotoCell(photoUrls) {
+  const firstPhoto = (photoUrls || [])[0] || "";
+  if (!firstPhoto) return `<span class="muted">No Photo</span>`;
+
+  const thumb = driveThumbnailUrl(firstPhoto, "w160");
+  const preview = driveImageUrl(firstPhoto);
+
+  return `
+    <a href="${escapeHtml(firstPhoto)}" target="_blank" title="Open original photo">
+      <img src="${escapeHtml(thumb)}"
+           onclick="event.preventDefault(); openPhoto('${jsString(preview)}')"
+           style="width:70px;height:70px;object-fit:cover;border-radius:8px;background:#f1f5f9;"
+           onerror="this.style.display='none'; this.parentElement.innerHTML='Open Photo';">
+    </a>`;
+}
+
+function renderApprovalTeacherRow(t, i, itemPhotos) {
+  const employeeId = String(t.employeeId || t.EmployeeID || "").trim();
+  const employeeName = t.employeeName || t.EmployeeName || t.Name || t.TeacherName || "-";
+  const photoUrls = Array.isArray(t.photos) && t.photos.length ? t.photos : (itemPhotos || []);
+  const status = t.approvalStatus || t.ApprovalStatus || "Pending";
+  const isApproved = String(status).toLowerCase() === "approved";
+  const isRejected = String(status).toLowerCase() === "rejected";
+  const noPhotos = !photoUrls.length;
+  const deduction = t.deductionDays ?? t.totalDeductionDays ?? t.TotalDeductionDays ?? 0;
+
+  return `
+    <tr>
+      <td>${i + 1}</td>
+      <td><b>${escapeHtml(employeeId)}</b></td>
+      <td>${escapeHtml(employeeName)}</td>
+      <td>${renderApprovalPhotoCell(photoUrls)}</td>
+      <td>
+        Absent: ${escapeHtml(t.absent ?? t.Absent ?? 0)}<br>
+        CL: ${escapeHtml(t.cl ?? t.CL ?? 0)}<br>
+        Medical: ${escapeHtml(t.medicalLeave ?? t.MedicalLeave ?? 0)}<br>
+        WPL: ${escapeHtml(t.withoutPayLeave ?? t.WithoutPayLeave ?? 0)}<br>
+        Deduction: <b>${escapeHtml(deduction)}</b>
+        ${t.remarks ? `<br><span class="muted">${escapeHtml(t.remarks)}</span>` : ""}
+      </td>
+      <td>${statusBadge(status)}</td>
+      <td>
+        <button class="btn success" ${noPhotos || isApproved ? "disabled" : ""} onclick="approveTeacherAttendance('${jsString(employeeId)}')">Approve</button>
+        <button class="btn danger" ${isRejected ? "disabled" : ""} onclick="rejectTeacherAttendance('${jsString(employeeId)}')">Reject</button>
+      </td>
+    </tr>`;
 }
 
 function selectApproval(index) {
   const item = (window.__approvalItems || [])[index];
   if (!item) return;
+
   state.selectedApproval = item;
   const photos = item.photos || [];
   const teachers = item.teachers || [];
+
   $("approvalDetail").innerHTML = `
     <h3>${escapeHtml(item.schoolCode)} — ${escapeHtml(item.month)}</h3>
-    <div class="summary-list">
-      <div class="summary-row"><span>Status</span><strong>${statusBadge(item.approvalStatus)}</strong></div>
-      <div class="summary-row"><span>Submitted By</span><strong>${escapeHtml(item.submittedBy || "-")}</strong></div>
-      <div class="summary-row"><span>Total Teachers</span><strong>${item.totalTeachers || 0}</strong></div>
-      <div class="summary-row"><span>Total Absent</span><strong>${item.totalAbsent || 0}</strong></div>
-      <div class="summary-row"><span>Total CL</span><strong>${item.totalCL || 0}</strong></div>
-      <div class="summary-row"><span>Total Medical</span><strong>${item.totalMedicalLeave || 0}</strong></div>
-      <div class="summary-row"><span>Total WPL</span><strong>${item.totalWithoutPayLeave || 0}</strong></div>
-      <div class="summary-row"><span>Total Deduction Days</span><strong>${item.totalDeductionDays || 0}</strong></div>
-    </div>
     <h4>Register Photos</h4>
-    <div class="photo-grid">${photos.length ? photos.map((u,i)=>`<div class="photo-item"><img src="${driveImageUrl(u)}" onclick="openPhoto('${driveImageUrl(u)}')"><a class="btn" href="${escapeHtml(u)}" target="_blank">Open ${i+1}</a></div>`).join("") : `<div class="message bad">No register photos found. Approval disabled.</div>`}</div>
-    <h4>Attendance Table</h4>
-    <div class="table-wrap"><table><thead><tr><th>S#</th><th>Employee ID</th><th>Absent</th><th>CL</th><th>Medical</th><th>WPL</th><th>Ded.</th><th>Remarks</th></tr></thead><tbody>${teachers.map((t,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(t.employeeId)}</td><td>${t.absent}</td><td>${t.cl}</td><td>${t.medicalLeave}</td><td>${t.withoutPayLeave}</td><td>${t.totalDeductionDays}</td><td>${escapeHtml(t.remarks || "")}</td></tr>`).join("")}</tbody></table></div>
-    <div class="actions">
-      <button class="btn success" ${photos.length ? "" : "disabled"} onclick="approveSelectedAttendance()">Approve Attendance</button>
-      <button class="btn danger" onclick="rejectSelectedAttendance()">Reject / Need Correction</button>
+    <div class="photo-grid">
+      ${photos.length ? photos.map((u,i)=>`
+        <div class="photo-item">
+          <img src="${escapeHtml(driveThumbnailUrl(u, "w250"))}"
+               onclick="openPhoto('${jsString(driveImageUrl(u))}')"
+               onerror="this.style.display='none';">
+          <a class="btn" href="${escapeHtml(u)}" target="_blank">Open ${i+1}</a>
+        </div>`).join("") : `<div class="message bad">No register photos found. Approval disabled.</div>`}
+    </div>
+
+    <h4>Teacher-wise Attendance Approval</h4>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>S#</th>
+            <th>Employee ID</th>
+            <th>Name</th>
+            <th>Photo</th>
+            <th>Attendance</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${teachers.length ? teachers.map((t,i)=>renderApprovalTeacherRow(t, i, photos)).join("") : `<tr><td colspan="7">No teachers found.</td></tr>`}
+        </tbody>
+      </table>
     </div>`;
 }
 
-async function approveSelectedAttendance() {
-  const item = state.selectedApproval; if (!item) return;
-  const result = await apiPost({ action:"approveAttendance", email:state.user.email, month:item.month, schoolCode:item.schoolCode });
+async function approveTeacherAttendance(employeeId) {
+  const item = state.selectedApproval;
+  if (!item || !employeeId) return;
+
+  const result = await apiPost({
+    action: "approveAttendance",
+    email: state.user.email,
+    month: item.month,
+    schoolCode: item.schoolCode,
+    employeeId: employeeId
+  });
+
   alert(result.message || (result.success ? "Approved" : "Approval failed"));
   renderAttendanceApproval();
 }
 
-async function rejectSelectedAttendance() {
-  const item = state.selectedApproval; if (!item) return;
+async function rejectTeacherAttendance(employeeId) {
+  const item = state.selectedApproval;
+  if (!item || !employeeId) return;
+
   const reason = prompt("Reject reason is required:");
   if (!reason) return;
-  const result = await apiPost({ action:"rejectAttendance", email:state.user.email, month:item.month, schoolCode:item.schoolCode, reason });
+
+  const result = await apiPost({
+    action: "rejectAttendance",
+    email: state.user.email,
+    month: item.month,
+    schoolCode: item.schoolCode,
+    employeeId: employeeId,
+    reason: reason
+  });
+
   alert(result.message || (result.success ? "Rejected" : "Reject failed"));
   renderAttendanceApproval();
 }
