@@ -692,8 +692,21 @@ function statusBadge(status) {
 
 function driveImageUrl(url) {
   const text = String(url || "");
-  const match = text.match(/\/d\/([^/]+)/) || text.match(/[?&]id=([^&]+)/);
-  return match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000` : text;
+
+  let id = "";
+
+  let match = text.match(/\/file\/d\/([^/]+)/);
+  if (match) id = match[1];
+
+  match = text.match(/\/d\/([^/]+)/);
+  if (!id && match) id = match[1];
+
+  match = text.match(/[?&]id=([^&]+)/);
+  if (!id && match) id = match[1];
+
+  if (!id) return text;
+
+  return "https://drive.google.com/uc?export=view&id=" + id;
 }
 
 function selectApproval(index) {
