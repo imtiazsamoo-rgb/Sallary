@@ -169,6 +169,7 @@ td input { min-width:70px; padding:8px; border-radius:10px; }
   <script>
 const CONFIG = {
   apiBaseUrl: "https://script.google.com/macros/s/AKfycbwhSGicsU1-wu9w25yRLcNszUdpnbsoywr4FeiB4CYSP7MQf3zkOqoOP92uPrMZg193Cw/exec",
+  portalAppId: "salary-system",
   specialSchoolCode: "230101018",
   maxRegisterPhotos: 10
 };
@@ -259,12 +260,17 @@ function showMessage(text, type = "") {
 }
 
 async function apiGet(action, params = {}) {
-  const q = new URLSearchParams({ action, ...params });
+  const sessionToken = state.user && state.user.sessionToken ? state.user.sessionToken : "";
+  const q = new URLSearchParams({ action, sessionToken, ...params });
   const res = await fetch(`${CONFIG.apiBaseUrl}?${q.toString()}`);
   return await res.json();
 }
 
 async function apiPost(payload) {
+  payload = payload || {};
+  if (state.user && state.user.sessionToken && !payload.sessionToken) {
+    payload.sessionToken = state.user.sessionToken;
+  }
   const res = await fetch(CONFIG.apiBaseUrl, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -298,8 +304,33 @@ async function login() {
   }
 }
 
+async function loginWithPortalToken() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  const appId = params.get("appId") || CONFIG.portalAppId;
+  if (!token) return false;
+
+  const box = $("loginMessage");
+  try {
+    box.innerHTML = showMessage("Checking portal session...", "ok");
+    const result = await apiPost({ action: "portalLogin", token, appId });
+    if (!result.success) {
+      box.innerHTML = showMessage(result.message || "Portal access denied. Please login.", "bad");
+      return false;
+    }
+    state.user = result;
+    localStorage.setItem("ibfs_user", JSON.stringify(result));
+    renderAfterLogin();
+    return true;
+  } catch (err) {
+    box.innerHTML = showMessage("Portal session check failed. Please login.", "bad");
+    return false;
+  }
+}
+
 function logout() {
   localStorage.removeItem("ibfs_user");
+  window.history.replaceState({}, "", window.location.origin + window.location.pathname);
   location.reload();
 }
 
@@ -1134,14 +1165,17 @@ function openPhoto(url) {
   $("photoModal").classList.remove("hidden");
 }
 
-window.onload = () => {
+window.onload = async () => {
   const saved = localStorage.getItem("ibfs_user");
   if (saved) {
     state.user = JSON.parse(saved);
     renderAfterLogin();
+    return;
   }
+  await loginWithPortalToken();
 };
 
   </script>
 </body>
 </html>
+
