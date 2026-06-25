@@ -287,9 +287,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const portalAppId = urlParams.get("appId") || "salaryApp";
 
   if (portalToken && portalApiUrl) {
-    if ($("loginBtn")) {
-      $("loginBtn").disabled = true;
-      $("loginMsg").innerHTML = msg("Authenticating via Central Portal...", "ok");
+    if ($("loginView")) {
+      $("loginView").style.display = "none";
+      const loader = document.createElement("div");
+      loader.id = "ssoLoader";
+      loader.style.cssText = "position:fixed;inset:0;background:linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;";
+      loader.innerHTML = `
+        <div style="width:70px;height:70px;border:5px solid rgba(99,102,241,0.2);border-top-color:#6366f1;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:24px;box-shadow:0 0 20px rgba(99,102,241,0.2);"></div>
+        <h2 style="color:#1e293b;font-size:24px;font-weight:700;margin:0 0 8px 0;letter-spacing:-0.5px;">Connecting to Central Portal</h2>
+        <p style="color:#64748b;font-size:16px;margin:0;font-weight:500;">Please wait while we verify your secure session...</p>
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+      `;
+      document.body.appendChild(loader);
     }
     
     fetch(portalApiUrl, {
@@ -303,6 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .then(res => res.json())
     .then(data => {
+      if ($("ssoLoader")) $("ssoLoader").remove();
       if (data.status === "success" && data.allowed) {
         state.user = data.user;
         sessionStorage.setItem("ibfs_user", JSON.stringify(data.user));
@@ -310,17 +320,14 @@ document.addEventListener("DOMContentLoaded", () => {
         window.history.replaceState({}, document.title, window.location.pathname);
         afterLogin();
       } else {
-        if ($("loginMsg")) {
-          $("loginMsg").innerHTML = msg(data.message || "Invalid Portal Session.", "bad");
-          $("loginBtn").disabled = false;
-        }
+        if ($("loginView")) $("loginView").style.display = "flex";
+        if ($("loginMsg")) $("loginMsg").innerHTML = msg(data.message || "Invalid Portal Session.", "bad");
       }
     })
     .catch(e => {
-      if ($("loginMsg")) {
-        $("loginMsg").innerHTML = msg("Portal connection failed.", "bad");
-        $("loginBtn").disabled = false;
-      }
+      if ($("ssoLoader")) $("ssoLoader").remove();
+      if ($("loginView")) $("loginView").style.display = "flex";
+      if ($("loginMsg")) $("loginMsg").innerHTML = msg("Portal connection failed.", "bad");
     });
     
     return;
