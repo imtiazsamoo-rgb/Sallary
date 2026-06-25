@@ -3,1179 +3,159 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IBFS Salary & Attendance Portal V2</title>
-  <style>
-:root {
-  --bg: #f4f7fb;
-  --panel: #ffffff;
-  --text: #172033;
-  --muted: #6b7280;
-  --line: #e5e7eb;
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --danger: #dc2626;
-  --warning: #f59e0b;
-  --success: #16a34a;
-  --dark: #0f172a;
-  --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-  --radius: 18px;
-}
-* { box-sizing: border-box; }
-body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: var(--bg); color: var(--text); }
-.hidden { display: none !important; }
-.muted { color: var(--muted); }
-label { display:block; font-size:13px; color:var(--muted); margin:12px 0 6px; font-weight:700; }
-select, input, textarea { width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--line); background:white; color:var(--text); font-size:14px; }
-textarea { min-height:90px; resize:vertical; }
-button { font: inherit; cursor:pointer; }
-.login-view { min-height:100vh; display:grid; place-items:center; padding:18px; }
-.login-card { width:100%; max-width:420px; background:white; border:1px solid var(--line); border-radius:24px; padding:24px; box-shadow:var(--shadow); }
-.login-brand { margin-bottom:20px; }
-.app-shell { min-height: 100vh; display: flex; }
-.sidebar { width: 290px; background: var(--dark); color: white; padding: 18px; position: fixed; inset: 0 auto 0 0; overflow-y: auto; z-index: 10; }
-.brand { display:flex; gap:12px; align-items:center; padding-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.12); }
-.brand-mark { width:48px; height:48px; border-radius:14px; background:var(--primary); display:grid; place-items:center; font-weight:800; color:white; }
-.brand h1 { margin:0; font-size:19px; }
-.brand p { margin:3px 0 0; color:#cbd5e1; font-size:12px; }
-.user-box { margin:16px 0; padding:14px; border-radius:16px; background:rgba(255,255,255,.08); display:grid; gap:4px; }
-.user-box span { color:#cbd5e1; font-size:12px; }
-.menu { display:grid; gap:6px; }
-.menu button { width:100%; border:0; background:transparent; color:#e5e7eb; text-align:left; padding:12px; border-radius:12px; font-size:14px; }
-.menu button:hover, .menu button.active { background:rgba(255,255,255,0.12); color:#fff; }
-.main { margin-left:290px; width:calc(100% - 290px); }
-.topbar { min-height:82px; background:var(--panel); border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:14px; padding:12px 26px; position:sticky; top:0; z-index:5; }
-.topbar h2 { margin:0; font-size:23px; }
-.topbar p { margin:4px 0 0; color:var(--muted); font-size:13px; }
-.top-actions { display:flex; gap:10px; align-items:center; }
-.top-actions input { width:150px; }
-.pill, .status { padding:8px 12px; border-radius:999px; background:#ecfeff; color:#155e75; font-size:13px; white-space:nowrap; font-weight:700; }
-.status.pending { background:#fef3c7; color:#92400e; }
-.status.approved { background:#dcfce7; color:#166534; }
-.status.rejected { background:#fee2e2; color:#991b1b; }
-.content { padding:26px; }
-.grid { display:grid; gap:18px; }
-.stats-grid { grid-template-columns:repeat(4,minmax(0,1fr)); margin-bottom:18px; }
-.module-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
-.card { background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px; box-shadow:var(--shadow); }
-.stat-card span { color:var(--muted); font-size:13px; }
-.stat-card strong { display:block; font-size:28px; margin:8px 0 4px; }
-.stat-card small { color:var(--muted); }
-.module-card { min-height:135px; transition:.15s ease; }
-.module-card:hover { transform:translateY(-2px); }
-.module-card .ico { font-size:32px; }
-.module-card h3 { margin:10px 0 6px; }
-.module-card p { margin:0; color:var(--muted); font-size:13px; line-height:1.4; }
-.screen-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
-.message { margin:12px 0; padding:13px 14px; border-radius:14px; border:1px solid #fed7aa; background:#fff7ed; color:#9a3412; font-weight:700; }
-.message.ok { border-color:#bbf7d0; background:#ecfdf5; color:#166534; }
-.message.bad { border-color:#fecaca; background:#fef2f2; color:#991b1b; }
-.table-wrap { overflow:auto; border:1px solid var(--line); border-radius:14px; background:white; }
-table { width:100%; border-collapse:collapse; min-width:850px; }
-th,td { padding:11px; border-bottom:1px solid var(--line); text-align:left; font-size:14px; vertical-align:middle; }
-th { background:#f8fafc; font-weight:800; }
-td input { min-width:70px; padding:8px; border-radius:10px; }
-.btn { border:0; border-radius:12px; padding:11px 16px; background:#e2e8f0; color:#111827; font-weight:800; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
-.btn.primary { background:var(--primary); color:white; }
-.btn.primary:hover { background:var(--primary-dark); }
-.btn.success { background:var(--success); color:white; }
-.btn.danger { background:var(--danger); color:white; }
-.btn.warning { background:var(--warning); color:#111827; }
-.btn.full { width:100%; margin-top:12px; }
-.icon-btn { border:0; border-radius:12px; padding:10px 12px; background:#e2e8f0; }
-.mobile-only { display:none; }
-.actions { display:flex; justify-content:space-between; gap:12px; margin-top:18px; flex-wrap:wrap; }
-.wizard { display:grid; gap:18px; }
-.steps { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-.step { border:1px solid var(--line); border-radius:14px; padding:12px; background:white; color:var(--muted); font-size:13px; }
-.step.active { border-color:var(--primary); color:var(--primary-dark); font-weight:800; background:#eff6ff; }
-.form-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-.upload-box { border:2px dashed #93c5fd; background:#f8fbff; border-radius:18px; padding:18px; }
-.photo-list, .photo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-top:14px; }
-.photo-item { border:1px solid var(--line); border-radius:14px; padding:9px; background:white; }
-.photo-item img { width:100%; height:110px; object-fit:cover; border-radius:10px; background:#f1f5f9; }
-.review-layout, .approval-layout { display:grid; grid-template-columns:320px 1fr; gap:18px; }
-.summary-list { display:grid; gap:10px; }
-.summary-row { display:flex; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); padding:9px 0; }
-.approval-list { display:grid; gap:10px; }
-.approval-item { display:flex; justify-content:space-between; align-items:center; gap:12px; border:1px solid var(--line); border-radius:14px; padding:14px; background:white; }
-.modal { position:fixed; inset:0; background:rgba(15,23,42,.85); z-index:999; display:grid; place-items:center; padding:18px; }
-.modal img { max-width:96vw; max-height:88vh; border-radius:16px; background:white; }
-.modal-close { position:fixed; top:18px; right:18px; border:0; border-radius:999px; padding:12px 16px; background:white; color:#111827; font-weight:900; }
-@media(max-width:1100px){ .stats-grid,.module-grid{grid-template-columns:repeat(2,minmax(0,1fr));} .review-layout,.approval-layout{grid-template-columns:1fr;} }
-@media(max-width:760px){ .mobile-only{display:inline-flex;} .sidebar{transform:translateX(-100%); transition:.2s ease;} .sidebar.open{transform:translateX(0);} .main{margin-left:0; width:100%;} .topbar{align-items:flex-start; flex-direction:column; padding:12px;} .top-actions{width:100%; flex-wrap:wrap;} .top-actions input{width:100%;} .content{padding:12px;} .stats-grid,.module-grid{grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;} .card{padding:14px;} .steps{grid-template-columns:1fr;} .form-grid{grid-template-columns:1fr;} .actions .btn{width:100%;} }
+  <meta name="description" content="IBFS Salary Management Portal — Manage school salaries, attendance, petty cash, and employee records securely." />
+  <meta name="theme-color" content="#6366f1" />
+  <title>IBFS Salary Management Portal</title>
 
-  </style>
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="logo.png" />
+
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+  <!-- =====================================================================
+       Login Screen
+       ===================================================================== -->
   <div id="loginView" class="login-view">
     <div class="login-card">
-      <div class="brand login-brand">
-        <div class="brand-mark">IBFS</div>
-        <div>
+      <div class="login-header">
+        <img src="logo.png" alt="IBFS Logo" style="height: 50px; width: auto; object-fit: contain; flex-shrink: 0;">
+        <div class="logo-text">
           <h1>IBFS Portal</h1>
-          <p>Salary & Attendance V2</p>
+          <p>Salary Management System</p>
         </div>
       </div>
-      <h2>Login</h2>
-      <p class="muted">Use your Admin or Principal account.</p>
-      <div id="loginMessage"></div>
-      <label>Email</label>
-      <input id="emailInput" type="email" placeholder="example@gmail.com" autocomplete="username" />
-      <label>Password</label>
-      <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" />
-      <button class="btn primary full" id="loginBtn">Login</button>
+
+      <h2>Welcome Back</h2>
+      <p class="login-subtitle">Sign in to manage salaries, attendance, and approvals.</p>
+
+      <div id="loginMsg"></div>
+
+      <form id="loginForm" onsubmit="return false;" autocomplete="on">
+        <div class="form-group">
+          <label for="emailInput">Email Address</label>
+          <input id="emailInput" type="email" autocomplete="username" placeholder="name@domain.com" required>
+        </div>
+        <div class="form-group">
+          <label for="passwordInput">Password</label>
+          <input id="passwordInput" type="password" autocomplete="current-password" placeholder="••••••••" required>
+        </div>
+        <button class="btn primary btn-full" id="loginBtn" type="submit" style="padding: 14px; font-size: 15px; margin-top: 4px; letter-spacing: 0.2px;">
+          Sign In →
+        </button>
+      </form>
+
+
     </div>
   </div>
 
-  <div id="app" class="app-shell hidden">
-    <aside class="sidebar" id="sidebar">
-      <div class="brand">
-        <div class="brand-mark">IBFS</div>
-        <div>
-          <h1>IBFS Portal</h1>
-          <p>Salary & Attendance V2</p>
+  <!-- =====================================================================
+       Core App Layout
+       ===================================================================== -->
+  <div id="app" class="app-layout hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="app-sidebar">
+      <!-- Brand Header -->
+      <div class="sidebar-brand">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="logo.png" alt="IBFS Logo" style="height: 34px; width: auto; object-fit: contain; filter: brightness(1.1);">
+          <div class="logo-text">
+            <h1>IBFS Portal</h1>
+            <p>Enterprise Suite</p>
+          </div>
         </div>
+        <button id="closeSidebarBtn" class="btn-close-sidebar mobile-only" aria-label="Close menu">✕</button>
       </div>
-      <div class="user-box">
-        <strong id="sideUserName">User</strong>
-        <span id="sideUserMeta">Role</span>
+
+      <!-- Scrollable Content -->
+      <div class="sidebar-scroll-area">
+        <!-- User Profile Box -->
+        <div class="user-profile-box">
+          <div class="user-avatar" id="avatarName" aria-hidden="true">U</div>
+          <div class="user-info">
+            <h3 id="sideName">Loading User...</h3>
+            <p id="sideMeta">Role | School</p>
+          </div>
+        </div>
+
+        <!-- Dynamic Navigation Menu -->
+        <nav id="menu" class="sidebar-menu" aria-label="Main Navigation"></nav>
       </div>
-      <nav id="menu" class="menu"></nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <p class="sidebar-footer-text">
+          IBFS Portal v2.0<br>
+          Salary Management System
+        </p>
+      </div>
     </aside>
 
-    <main class="main">
-      <header class="topbar">
-        <button class="icon-btn mobile-only" id="sidebarToggle">☰</button>
-        <div>
-          <h2 id="pageTitle">Dashboard</h2>
-          <p id="pageSubTitle">Welcome to IBFS Salary & Attendance Portal</p>
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+      <!-- Top Header Bar -->
+      <header class="app-header" role="banner">
+        <div class="header-left">
+          <button id="menuBtn" class="btn-menu-toggle mobile-only" aria-label="Toggle sidebar menu" aria-expanded="false">☰</button>
+          <button id="headerBackBtn" class="btn hidden" onclick="openPage('Dashboard')" aria-label="Go back to Dashboard">← Back</button>
+          <div class="page-title-area">
+            <h2 id="title">Dashboard</h2>
+            <p id="subtitle">Fast live summary from Apps Script</p>
+          </div>
         </div>
-        <div class="top-actions">
-          <input id="globalMonth" type="month" value="2026-05" />
-          <span class="pill" id="currentSchool">School: -</span>
-          <button class="btn danger" id="logoutBtn">Logout</button>
+
+        <div class="header-actions" role="complementary">
+          <div class="header-action-item">
+            <label class="sr-only" for="globalMonth">Select Month</label>
+            <input id="globalMonth" type="month" aria-label="Select month for reports" title="Select month">
+          </div>
+          <span id="networkPill" class="status-pill status-online" aria-live="polite" title="Network status">Online</span>
+          <span id="schoolPill" class="badge-pill" aria-label="Assigned school">School: -</span>
+          <button id="logoutBtn" class="btn danger btn-sm" aria-label="Sign out">Sign Out</button>
         </div>
       </header>
 
-      <section id="content" class="content"></section>
-    </main>
+      <!-- Dynamic Screen Content -->
+      <main class="app-content" id="mainContent" role="main">
+        <div id="content"></div>
+      </main>
+    </div>
   </div>
 
-  <div id="photoModal" class="modal hidden">
-    <button class="modal-close" id="closeModal">Close ✕</button>
-    <img id="modalImage" alt="Register photo preview" />
+  <!-- =====================================================================
+       Image Preview Lightbox
+       ===================================================================== -->
+  <div id="photoModal" class="photo-lightbox hidden" role="dialog" aria-modal="true" aria-label="Image preview">
+    <div class="lightbox-toolbar">
+      <button class="btn-lightbox-action" onclick="rotatePhoto(-90)" aria-label="Rotate left">↺ Left</button>
+      <button class="btn-lightbox-action" onclick="rotatePhoto(90)" aria-label="Rotate right">↻ Right</button>
+      <button class="btn-lightbox-action close" onclick="closePhoto()" aria-label="Close preview">✕ Close</button>
+    </div>
+    <div class="lightbox-content">
+      <img id="modalImage" alt="Preview Image" style="transform: rotate(0deg) scale(1); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);">
+    </div>
   </div>
 
-  <script>
-const CONFIG = {
-  apiBaseUrl: "https://script.google.com/macros/s/AKfycbwhSGicsU1-wu9w25yRLcNszUdpnbsoywr4FeiB4CYSP7MQf3zkOqoOP92uPrMZg193Cw/exec",
-  portalAppId: "salary-system",
-  specialSchoolCode: "230101018",
-  maxRegisterPhotos: 10
-};
-
-const MENUS = {
-  admin: [
-    ["Dashboard", "📊", "System summary"],
-    ["Employees", "👥", "Employee data"],
-    ["Employee Approval", "🆕", "New staff approval"],
-    ["Attendance Approval", "✅", "Verify register photos"],
-    ["Salary Generation", "💰", "Generate monthly salary"],
-    ["School Salary Sheets", "📄", "School wise reports"],
-    ["Combined Reports", "📚", "Admin combined reports"],
-    ["Payslips", "🧾", "Teacher payslips"],
-    ["Users", "👤", "User accounts"],
-    ["Audit Log", "📝", "Activity history"],
-    ["Settings", "⚙️", "Month lock/config"]
-  ],
-  principal: [
-    ["Dashboard", "📊", "My school summary"],
-    ["Attendance Entry", "📋", "Fill teacher attendance"],
-    ["Attendance Status", "🔎", "Approval status"],
-    ["Teachers", "👥", "My school staff"],
-    ["Salary Sheet", "📄", "Salary view"],
-    ["Payslips", "🧾", "Employee payslips"],
-    ["Resignation", "📤", "Resignation request"],
-    ["Profile", "👤", "My account"]
-  ]
-};
-
-const state = {
-  user: null,
-  activePage: "Dashboard",
-  dashboard: null,
-  wizardStep: 0,
-  attendance: {
-    month: "",
-    schoolCode: "",
-    photos: [],
-    staff: []
-  },
-  selectedApproval: null
-};
-
-const $ = (id) => document.getElementById(id);
-const content = $("content");
-const pageTitle = $("pageTitle");
-const pageSubTitle = $("pageSubTitle");
-const menu = $("menu");
-const sidebar = $("sidebar");
-
-$("loginBtn").addEventListener("click", login);
-$("logoutBtn").addEventListener("click", logout);
-$("sidebarToggle").addEventListener("click", () => sidebar.classList.toggle("open"));
-$("globalMonth").addEventListener("change", () => renderPage());
-$("closeModal").addEventListener("click", () => $("photoModal").classList.add("hidden"));
-
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, c => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
-  }[c]));
-}
-
-function jsString(value) {
-  return String(value ?? "")
-    .replace(/\\/g, "\\\\")
-    .replace(/'/g, "\\'")
-    .replace(/\r/g, "")
-    .replace(/\n/g, "\\n");
-}
-
-function money(n) {
-  return "Rs. " + Number(n || 0).toLocaleString("en-PK");
-}
-
-function isAdmin() {
-  return state.user && String(state.user.role || "").toLowerCase() === "admin";
-}
-
-function getMonth() {
-  return $("globalMonth").value || "2026-05";
-}
-
-function showMessage(text, type = "") {
-  if (!text) return "";
-  const cls = type === "ok" ? " ok" : type === "bad" ? " bad" : "";
-  return `<div class="message${cls}">${escapeHtml(text)}</div>`;
-}
-
-async function apiGet(action, params = {}) {
-  const sessionToken = state.user && state.user.sessionToken ? state.user.sessionToken : "";
-  const q = new URLSearchParams({ action, sessionToken, ...params });
-  const res = await fetch(`${CONFIG.apiBaseUrl}?${q.toString()}`);
-  return await res.json();
-}
-
-async function apiPost(payload) {
-  payload = payload || {};
-  if (state.user && state.user.sessionToken && !payload.sessionToken) {
-    payload.sessionToken = state.user.sessionToken;
-  }
-  const res = await fetch(CONFIG.apiBaseUrl, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload)
-  });
-  return await res.json();
-}
-
-async function login() {
-  const email = $("emailInput").value.trim();
-  const password = $("passwordInput").value.trim();
-  const box = $("loginMessage");
-
-  if (!email || !password) {
-    box.innerHTML = showMessage("Email and password are required.", "bad");
-    return;
-  }
-
-  try {
-    box.innerHTML = showMessage("Checking login...", "ok");
-    const result = await apiGet("login", { email, password });
-    if (!result.success) {
-      box.innerHTML = showMessage(result.message || "Invalid login.", "bad");
-      return;
-    }
-    state.user = result;
-    localStorage.setItem("ibfs_user", JSON.stringify(result));
-    renderAfterLogin();
-  } catch (err) {
-    box.innerHTML = showMessage("API connection failed. Check Apps Script deployment URL.", "bad");
-  }
-}
-
-async function loginWithPortalToken() {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get("token");
-  const appId = params.get("appId") || CONFIG.portalAppId;
-  if (!token) return false;
-
-  const box = $("loginMessage");
-  try {
-    box.innerHTML = showMessage("Checking portal session...", "ok");
-    const result = await apiPost({ action: "portalLogin", token, appId });
-    if (!result.success) {
-      box.innerHTML = showMessage(result.message || "Portal access denied. Please login.", "bad");
-      return false;
-    }
-    state.user = result;
-    localStorage.setItem("ibfs_user", JSON.stringify(result));
-    renderAfterLogin();
-    return true;
-  } catch (err) {
-    box.innerHTML = showMessage("Portal session check failed. Please login.", "bad");
-    return false;
-  }
-}
-
-function logout() {
-  localStorage.removeItem("ibfs_user");
-  window.history.replaceState({}, "", window.location.origin + window.location.pathname);
-  location.reload();
-}
-
-function renderAfterLogin() {
-  $("loginView").classList.add("hidden");
-  $("app").classList.remove("hidden");
-  $("sideUserName").textContent = state.user.name || state.user.email;
-  $("sideUserMeta").textContent = `${state.user.role} | ${state.user.schoolCode || "ALL"}`;
-  $("currentSchool").textContent = `School: ${state.user.schoolCode || "ALL"}`;
-  state.activePage = "Dashboard";
-  renderMenu();
-  renderPage();
-}
-
-function renderMenu() {
-  const items = MENUS[isAdmin() ? "admin" : "principal"];
-  menu.innerHTML = items.map(item => `
-    <button class="${item[0] === state.activePage ? "active" : ""}" onclick="openPage('${item[0]}')">
-      ${item[1]} ${item[0]}
-    </button>
-  `).join("");
-}
-
-function openPage(page) {
-  state.activePage = page;
-  sidebar.classList.remove("open");
-  renderMenu();
-  renderPage();
-}
-
-function setHeader(title, subtitle) {
-  pageTitle.textContent = title;
-  pageSubTitle.textContent = subtitle || "";
-}
-
-function renderPage() {
-  if (state.activePage === "Dashboard") return renderDashboard();
-  if (state.activePage === "Attendance Entry") return renderAttendanceWizard();
-  if (state.activePage === "Attendance Approval") return renderAttendanceApproval();
-  if (state.activePage === "Attendance Status") return renderAttendanceStatus();
-  if (state.activePage === "Teachers" || state.activePage === "Employees") return renderTeachers();
-  if (state.activePage === "Payslips") return renderPayslips();
-  if (state.activePage === "Salary Sheet" || state.activePage === "School Salary Sheets") return renderSalarySheet();
-  if (state.activePage === "Combined Reports") return renderCombinedReports();
-  if (state.activePage === "Salary Generation") return renderSalaryGeneration();
-  renderPlaceholder(state.activePage);
-}
-
-async function renderDashboard() {
-  setHeader(isAdmin() ? "Admin Dashboard" : "Principal Dashboard", "Live summary from Apps Script API");
-  content.innerHTML = `<div class="card">Loading dashboard...</div>`;
-  try {
-    const result = await apiGet("dashboard", { email: state.user.email, month: getMonth() });
-    if (!result.success) {
-      content.innerHTML = showMessage(result.message || "Dashboard loading failed.", "bad");
-      return;
-    }
-    state.dashboard = result;
-    const c = result.cards || {};
-    const cards = isAdmin()
-      ? [
-          ["🏫", "Total Schools", c.totalSchools],
-          ["👥", "Total Employees", c.totalEmployees],
-          ["💰", "Gross Salary", money(c.grossSalary)],
-          ["📉", "Deductions", money(c.totalDeductionAmount)],
-          ["✅", "Net Salary", money(c.netSalary)],
-          ["🟡", "Pending Attendance", c.pendingAttendanceSchools],
-          ["🟢", "Approved Attendance", c.approvedAttendanceSchools]
-        ]
-      : [
-          ["👥", "My School Teachers", c.mySchoolTeachers],
-          ["💰", "Gross Salary", money(c.grossSalary)],
-          ["📉", "Deductions", money(c.totalDeductionAmount)],
-          ["✅", "Net Salary", money(c.netSalary)],
-          ["📋", "Attendance Status", c.attendanceStatus]
-        ];
-    const modules = MENUS[isAdmin() ? "admin" : "principal"].filter(m => m[0] !== "Dashboard");
-    content.innerHTML = `
-      <div class="grid stats-grid">
-        ${cards.map(k => `<div class="card stat-card"><span>${k[1]}</span><strong>${k[2] ?? 0}</strong><small>${k[0]}</small></div>`).join("")}
-      </div>
-      <h3>Modules</h3>
-      <div class="grid module-grid">
-        ${modules.map(m => `<button class="card module-card" onclick="openPage('${m[0]}')"><div class="ico">${m[1]}</div><h3>${m[0]}</h3><p>${m[2]}</p></button>`).join("")}
-      </div>
-    `;
-  } catch (err) {
-    content.innerHTML = showMessage("Dashboard API error.", "bad");
-  }
-}
-
-function renderPlaceholder(title) {
-  setHeader(title, "Module shell");
-  content.innerHTML = `<div class="card"><h3>${escapeHtml(title)}</h3><p class="muted">This module screen is ready for the next backend connection.</p></div>`;
-}
-
-async function loadPrincipalTeachers() {
-  const result = await apiGet("dashboard", { email: state.user.email, month: getMonth() });
-  if (!result.success) throw new Error(result.message || "Teachers loading failed.");
-  return result.teachers || [];
-}
-
-async function renderTeachers() {
-  setHeader(isAdmin() ? "Employees" : "Teachers", isAdmin() ? "Employee module shell" : "My school staff list");
-  content.innerHTML = `<div class="card">Loading...</div>`;
-  if (isAdmin()) {
-    content.innerHTML = `<div class="card"><p>Admin employee list API will be connected in Employee Management phase.</p></div>`;
-    return;
-  }
-  try {
-    const rows = await loadPrincipalTeachers();
-    content.innerHTML = `
-      <div class="card">
-        <div class="table-wrap"><table>
-          <thead><tr><th>S#</th><th>Employee ID</th><th>Name</th><th>Designation</th><th>Basic</th><th>Deduction</th><th>Net</th></tr></thead>
-          <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(r.employeeId)}</td><td>${escapeHtml(r.employeeName)}</td><td>${escapeHtml(r.designation)}</td><td>${money(r.basicSalary)}</td><td>${money(r.deductionAmount)}</td><td><b>${money(r.netSalary)}</b></td></tr>`).join("")}</tbody>
-        </table></div>
-      </div>`;
-  } catch (err) {
-    content.innerHTML = showMessage(err.message, "bad");
-  }
-}
-
-function resetAttendanceIfNeeded() {
-  const month = getMonth();
-  const schoolCode = state.user.schoolCode || "";
-  if (state.attendance.month !== month || state.attendance.schoolCode !== schoolCode) {
-    state.wizardStep = 0;
-    state.attendance = { month, schoolCode, photos: [], staff: [] };
-  }
-}
-
-async function renderAttendanceWizard() {
-  setHeader("Attendance Entry", "Month → Register Photos → Staff Attendance Table → Review → Submit");
-  resetAttendanceIfNeeded();
-  if (isAdmin()) {
-    content.innerHTML = showMessage("Admin cannot submit attendance. Use Attendance Approval module.", "bad");
-    return;
-  }
-  if (!state.attendance.staff.length) {
-    content.innerHTML = `<div class="card">Loading teacher list...</div>`;
-    try {
-      const rows = await loadPrincipalTeachers();
-      state.attendance.staff = rows.map(t => ({
-        employeeId: t.employeeId,
-        employeeName: t.employeeName,
-        designation: t.designation,
-        absent: 0,
-        cl: 0,
-        medicalLeave: 0,
-        withoutPayLeave: 0,
-        remarks: ""
-      }));
-    } catch (err) {
-      content.innerHTML = showMessage(err.message, "bad");
-      return;
-    }
-  }
-  const steps = ["Month", "Register Photos", "Staff Attendance", "Review"];
-  content.innerHTML = `
-    <div class="wizard">
-      <div class="steps">${steps.map((s,i)=>`<div class="step ${i===state.wizardStep?"active":""}">${i+1}. ${s}</div>`).join("")}</div>
-      <div class="card" id="wizardBody"></div>
-    </div>`;
-  renderWizardBody();
-}
-
-function renderWizardBody() {
-  const body = $("wizardBody");
-  if (state.wizardStep === 0) body.innerHTML = monthStepHtml();
-  if (state.wizardStep === 1) body.innerHTML = photosStepHtml();
-  if (state.wizardStep === 2) body.innerHTML = staffStepHtml();
-  if (state.wizardStep === 3) body.innerHTML = reviewStepHtml();
-  bindWizardEvents();
-}
-
-function monthStepHtml() {
-  return `
-    <h3>Select Attendance Month</h3>
-    <div class="form-grid">
-      <div><label>School Code</label><input value="${escapeHtml(state.attendance.schoolCode)}" readonly></div>
-      <div><label>Month</label><input id="attMonth" type="month" value="${escapeHtml(state.attendance.month)}"></div>
-      <div><label>Status</label><input value="Draft" readonly></div>
+  <!-- =====================================================================
+       General Purpose Popup Modal
+       ===================================================================== -->
+  <div id="generalModal" class="photo-lightbox hidden" role="dialog" aria-modal="true" aria-label="Popup dialog">
+    <button class="btn-close-lightbox" onclick="closeGeneralModal()" aria-label="Close dialog">✕ Close</button>
+    <div class="lightbox-content" id="generalModalContent"
+         style="background: var(--bg-card); padding: 28px; border-radius: var(--radius-xl); width: 95%; max-width: 500px; color: var(--text-main); display: block; overflow-y: auto; max-height: 82vh; box-shadow: var(--shadow-xl); border: 1.5px solid var(--border-color);">
     </div>
-    <div id="attendanceStatusBox"></div>
-    ${wizardActions(false,true)}
-  `;
-}
+  </div>
 
-function photosStepHtml() {
-  return `
-    <h3>Upload Attendance Register Photos</h3>
-    <p class="muted">At least one clear register photo is compulsory. Admin will verify photos inside portal.</p>
-    <div class="upload-box">
-      <input id="registerPhotos" type="file" accept="image/*" multiple>
-      <p class="muted">Maximum ${CONFIG.maxRegisterPhotos} photos.</p>
-    </div>
-    <div class="photo-list">
-      ${state.attendance.photos.length ? state.attendance.photos.map((p,i)=>`
-        <div class="photo-item">
-          <img src="${p.dataUrl}" alt="Register photo ${i+1}">
-          <div class="muted">${escapeHtml(p.fileName)}</div>
-          <button class="btn danger" data-remove-photo="${i}">Remove</button>
-        </div>`).join("") : `<div class="message bad">No register photos selected.</div>`}
-    </div>
-    ${wizardActions(true,true)}
-  `;
-}
-
-function staffStepHtml() {
-  return `
-    <h3>Teacher Attendance</h3>
-    <p class="muted">Rows include Employee ID, Name and Designation to avoid mistakes.</p>
-    <div class="table-wrap"><table>
-      <thead><tr><th>S#</th><th>Employee ID</th><th>Employee Name</th><th>Designation</th><th>Absent</th><th>CL</th><th>Medical</th><th>WPL</th><th>Ded. Days</th><th>Remarks</th></tr></thead>
-      <tbody>${state.attendance.staff.map((s,i)=>`
-        <tr>
-          <td>${i+1}</td><td>${escapeHtml(s.employeeId)}</td><td>${escapeHtml(s.employeeName)}</td><td>${escapeHtml(s.designation)}</td>
-          <td><input type="number" min="0" data-index="${i}" data-field="absent" value="${s.absent}"></td>
-          <td><input type="number" min="0" data-index="${i}" data-field="cl" value="${s.cl}"></td>
-          <td><input type="number" min="0" data-index="${i}" data-field="medicalLeave" value="${s.medicalLeave}"></td>
-          <td><input type="number" min="0" data-index="${i}" data-field="withoutPayLeave" value="${s.withoutPayLeave}"></td>
-          <td><b>${calculateDeductionDays(s, state.attendance.schoolCode)}</b></td>
-          <td><input data-index="${i}" data-field="remarks" value="${escapeHtml(s.remarks)}"></td>
-        </tr>`).join("")}</tbody>
-    </table></div>
-    ${wizardActions(true,true)}
-  `;
-}
-
-function reviewStepHtml() {
-  const s = attendanceSummary();
-  return `
-    <h3>Review & Submit</h3>
-    <div class="review-layout">
-      <div>
-        <h4>Register Photos</h4>
-        <div class="photo-list">${state.attendance.photos.map((p,i)=>`<div class="photo-item"><img src="${p.dataUrl}" onclick="openPhoto('${p.dataUrl}')"><div>Photo ${i+1}</div></div>`).join("")}</div>
-      </div>
-      <div>
-        <h4>Summary</h4>
-        <div class="summary-list">
-          <div class="summary-row"><span>School Code</span><strong>${escapeHtml(state.attendance.schoolCode)}</strong></div>
-          <div class="summary-row"><span>Month</span><strong>${escapeHtml(state.attendance.month)}</strong></div>
-          <div class="summary-row"><span>Total Staff</span><strong>${s.totalStaff}</strong></div>
-          <div class="summary-row"><span>Register Photos</span><strong>${s.photos}</strong></div>
-          <div class="summary-row"><span>Total Absent</span><strong>${s.absent}</strong></div>
-          <div class="summary-row"><span>Total CL</span><strong>${s.cl}</strong></div>
-          <div class="summary-row"><span>Total Medical</span><strong>${s.medical}</strong></div>
-          <div class="summary-row"><span>Total WPL</span><strong>${s.wpl}</strong></div>
-          <div class="summary-row"><span>Total Deduction Days</span><strong>${s.deductionDays}</strong></div>
-        </div>
-      </div>
-    </div>
-    <div class="table-wrap" style="margin-top:16px"><table>
-      <thead><tr><th>S#</th><th>Employee ID</th><th>Name</th><th>Absent</th><th>CL</th><th>Medical</th><th>WPL</th><th>Ded.</th></tr></thead>
-      <tbody>${state.attendance.staff.map((r,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(r.employeeId)}</td><td>${escapeHtml(r.employeeName)}</td><td>${r.absent}</td><td>${r.cl}</td><td>${r.medicalLeave}</td><td>${r.withoutPayLeave}</td><td>${calculateDeductionDays(r,state.attendance.schoolCode)}</td></tr>`).join("")}</tbody>
-    </table></div>
-    <label><input id="confirmAttendance" type="checkbox" style="width:auto"> I confirm this attendance is correct.</label>
-    <div class="actions"><button class="btn" id="prevStep">Back</button><button class="btn success" id="submitAttendance">Submit Attendance</button></div>
-  `;
-}
-
-function wizardActions(back,next) {
-  return `<div class="actions">${back?`<button class="btn" id="prevStep">Back</button>`:`<span></span>`}${next?`<button class="btn primary" id="nextStep">Next</button>`:""}</div>`;
-}
-
-function bindWizardEvents() {
-  const next = $("nextStep");
-  const prev = $("prevStep");
-  if (next) next.onclick = () => { saveCurrentWizardStep(); if (!validateWizardStep()) return; state.wizardStep = Math.min(3, state.wizardStep + 1); renderAttendanceWizard(); };
-  if (prev) prev.onclick = () => { saveCurrentWizardStep(); state.wizardStep = Math.max(0, state.wizardStep - 1); renderAttendanceWizard(); };
-  const attMonth = $("attMonth");
-  if (attMonth) attMonth.onchange = () => { state.attendance.month = attMonth.value; $("globalMonth").value = attMonth.value; };
-  const fileInput = $("registerPhotos");
-  if (fileInput) fileInput.onchange = async (e) => {
-    const files = Array.from(e.target.files || []);
-    for (const file of files) {
-      if (state.attendance.photos.length >= CONFIG.maxRegisterPhotos) break;
-      state.attendance.photos.push(await fileToBase64Object(file));
-    }
-    renderAttendanceWizard();
-  };
-  document.querySelectorAll("[data-remove-photo]").forEach(btn => btn.onclick = () => { state.attendance.photos.splice(Number(btn.dataset.removePhoto),1); renderAttendanceWizard(); });
-  document.querySelectorAll("[data-field]").forEach(input => input.onchange = () => {
-    const row = state.attendance.staff[Number(input.dataset.index)];
-    const field = input.dataset.field;
-    row[field] = field === "remarks" ? input.value : Number(input.value || 0);
-    renderAttendanceWizard();
-    state.wizardStep = 2;
-  });
-  const submit = $("submitAttendance");
-  if (submit) submit.onclick = submitAttendance;
-}
-
-function saveCurrentWizardStep() {
-  const month = $("attMonth");
-  if (month) { state.attendance.month = month.value; $("globalMonth").value = month.value; }
-}
-
-function validateWizardStep() {
-  if (state.wizardStep === 0 && !state.attendance.month) { alert("Please select month."); return false; }
-  if (state.wizardStep === 1 && state.attendance.photos.length === 0) { alert("Register photo is compulsory."); return false; }
-  return true;
-}
-
-function calculateDeductionDays(row, schoolCode) {
-  const allowed = String(schoolCode) === CONFIG.specialSchoolCode ? 1 : 2;
-  const combined = Number(row.cl || 0) + Number(row.medicalLeave || 0);
-  return Number(row.absent || 0) + Number(row.withoutPayLeave || 0) + Math.max(0, combined - allowed);
-}
-
-function attendanceSummary() {
-  return state.attendance.staff.reduce((a,r)=>{
-    a.totalStaff++;
-    a.absent += Number(r.absent || 0);
-    a.cl += Number(r.cl || 0);
-    a.medical += Number(r.medicalLeave || 0);
-    a.wpl += Number(r.withoutPayLeave || 0);
-    a.deductionDays += calculateDeductionDays(r,state.attendance.schoolCode);
-    return a;
-  }, { totalStaff:0, photos:state.attendance.photos.length, absent:0, cl:0, medical:0, wpl:0, deductionDays:0 });
-}
-
-function fileToBase64Object(file) {
-  return new Promise((resolve,reject)=>{
-    const r = new FileReader();
-    r.onload = () => {
-      const dataUrl = String(r.result || "");
-      resolve({ fileName:file.name, mimeType:file.type || "image/jpeg", dataUrl, base64:dataUrl.split(",")[1] || "" });
-    };
-    r.onerror = () => reject(r.error);
-    r.readAsDataURL(file);
-  });
-}
-
-async function submitAttendance() {
-  if (!$("confirmAttendance")?.checked) { alert("Please confirm attendance before submit."); return; }
-  try {
-    const payload = {
-      action: "submitAttendance",
-      email: state.user.email,
-      month: state.attendance.month,
-      schoolCode: state.attendance.schoolCode,
-      registerImages: state.attendance.photos.map(p => ({ fileName:p.fileName, mimeType:p.mimeType, base64:p.base64 })),
-      teachers: state.attendance.staff.map(r => ({ employeeId:r.employeeId, absent:r.absent, cl:r.cl, medicalLeave:r.medicalLeave, withoutPayLeave:r.withoutPayLeave, remarks:r.remarks }))
-    };
-    content.innerHTML = `<div class="card">Uploading photos and submitting attendance...</div>`;
-    const result = await apiPost(payload);
-    if (!result.success) { content.innerHTML = showMessage(result.message || "Attendance submission failed.", "bad"); return; }
-    state.attendance = { month:getMonth(), schoolCode:state.user.schoolCode || "", photos:[], staff:[] };
-    state.wizardStep = 0;
-    content.innerHTML = showMessage(result.message || "Attendance submitted successfully and sent to Admin for approval.", "ok");
-  } catch (err) {
-    content.innerHTML = showMessage("Attendance API error.", "bad");
-  }
-}
-
-async function renderAttendanceStatus() {
-  setHeader("Attendance Status", "Submitted / Pending / Approved / Rejected");
-  content.innerHTML = `<div class="card">Loading...</div>`;
-  try {
-    const result = await apiGet("attendanceStatus", { email:state.user.email, month:getMonth(), schoolCode:state.user.schoolCode });
-    if (!result.success) { content.innerHTML = showMessage(result.message, "bad"); return; }
-    content.innerHTML = `<div class="card"><h3>Status: ${statusBadge(result.status)}</h3><div class="summary-list"><div class="summary-row"><span>Month</span><strong>${escapeHtml(result.month)}</strong></div><div class="summary-row"><span>School Code</span><strong>${escapeHtml(result.schoolCode)}</strong></div><div class="summary-row"><span>Total Teachers</span><strong>${result.totalTeachers || 0}</strong></div><div class="summary-row"><span>Photos</span><strong>${(result.photos || []).length}</strong></div><div class="summary-row"><span>Submitted By</span><strong>${escapeHtml(result.submittedBy || "-")}</strong></div><div class="summary-row"><span>Reject Reason</span><strong>${escapeHtml(result.rejectReason || "-")}</strong></div></div></div>`;
-  } catch (err) { content.innerHTML = showMessage("Attendance status API error.", "bad"); }
-}
-
-async function renderAttendanceApproval() {
-  setHeader("Attendance Approval", "Select school from dropdown and approve/reject teacher-wise attendance");
-  if (!isAdmin()) {
-    content.innerHTML = showMessage("Only Admin can access this screen.", "bad");
-    return;
-  }
-
-  content.innerHTML = `<div class="card">Loading pending attendance...</div>`;
-
-  try {
-    const result = await apiGet("attendanceForApproval", {
-      email: state.user.email,
-      month: getMonth(),
-      status: "all"
-    });
-
-    if (!result.success) {
-      content.innerHTML = showMessage(result.message || "Approval list failed.", "bad");
-      return;
-    }
-
-    const items = result.items || [];
-    window.__approvalItems = items;
-    state.selectedApproval = null;
-
-    content.innerHTML = `
-      <div class="card">
-        <h3>Attendance Approval</h3>
-        <div class="form-grid">
-          <div>
-            <label>Select School</label>
-            <select id="approvalSchoolSelect" onchange="selectApproval(this.value)">
-              <option value="">-- Select School --</option>
-              ${items.map((it,i)=>`
-                <option value="${i}">
-                  ${escapeHtml(it.schoolCode)} — ${escapeHtml(it.month)} — ${escapeHtml(it.approvalStatus || "Pending")} — Staff: ${it.totalTeachers || 0}
-                </option>`).join("")}
-            </select>
-          </div>
-        </div>
-
-        ${items.length ? "" : `<div class="message">No attendance records found for this month.</div>`}
-
-        <div id="approvalDetail" style="margin-top:18px;">
-          <div class="message">Select a school from dropdown.</div>
-        </div>
-      </div>`;
-
-  } catch (err) {
-    content.innerHTML = showMessage("Attendance approval API error.", "bad");
-  }
-}
-
-function statusBadge(status) {
-  const s = String(status || "Pending");
-  const cls = s.toLowerCase() === "approved" ? "approved" : s.toLowerCase() === "rejected" ? "rejected" : "pending";
-  const icon = cls === "approved" ? "🟢" : cls === "rejected" ? "🔴" : "🟡";
-  return `<span class="status ${cls}">${icon} ${escapeHtml(s)}</span>`;
-}
-
-function extractDriveFileId(url) {
-  const text = String(url || "");
-  let match = text.match(/\/file\/d\/([^/]+)/);
-  if (match) return match[1];
-
-  match = text.match(/\/d\/([^/]+)/);
-  if (match) return match[1];
-
-  match = text.match(/[?&]id=([^&]+)/);
-  if (match) return match[1];
-
-  match = text.match(/[-\w]{25,}/);
-  if (match) return match[0];
-
-  return "";
-}
-
-function driveThumbnailUrl(url, size = "w200") {
-  const id = extractDriveFileId(url);
-  if (!id) return String(url || "");
-  return `https://drive.google.com/thumbnail?id=${id}&sz=${size}`;
-}
-
-function driveImageUrl(url) {
-  return driveThumbnailUrl(url, "w1000");
-}
-
-function renderApprovalPhotoCell(photoUrls) {
-  const firstPhoto = (photoUrls || [])[0] || "";
-  if (!firstPhoto) return `<span class="muted">No Photo</span>`;
-
-  const thumb = driveThumbnailUrl(firstPhoto, "w160");
-  const preview = driveImageUrl(firstPhoto);
-
-  return `
-    <a href="${escapeHtml(firstPhoto)}" target="_blank" title="Open original photo">
-      <img src="${escapeHtml(thumb)}"
-           onclick="event.preventDefault(); openPhoto('${jsString(preview)}')"
-           style="width:70px;height:70px;object-fit:cover;border-radius:8px;background:#f1f5f9;"
-           onerror="this.style.display='none'; this.parentElement.innerHTML='Open Photo';">
-    </a>`;
-}
-
-function renderApprovalTeacherRow(t, i, itemPhotos) {
-  const employeeId = String(t.employeeId || t.EmployeeID || "").trim();
-  const employeeName = t.employeeName || t.EmployeeName || t.Name || t.TeacherName || "-";
-  const photoUrls = Array.isArray(t.photos) && t.photos.length ? t.photos : (itemPhotos || []);
-  const status = t.approvalStatus || t.ApprovalStatus || "Pending";
-  const isApproved = String(status).toLowerCase() === "approved";
-  const isRejected = String(status).toLowerCase() === "rejected";
-  const noPhotos = !photoUrls.length;
-  const deduction = t.deductionDays ?? t.totalDeductionDays ?? t.TotalDeductionDays ?? 0;
-
-  return `
-    <tr>
-      <td>${i + 1}</td>
-      <td><b>${escapeHtml(employeeId)}</b></td>
-      <td>${escapeHtml(employeeName)}</td>
-      <td>${renderApprovalPhotoCell(photoUrls)}</td>
-      <td>
-        Absent: ${escapeHtml(t.absent ?? t.Absent ?? 0)}<br>
-        CL: ${escapeHtml(t.cl ?? t.CL ?? 0)}<br>
-        Medical: ${escapeHtml(t.medicalLeave ?? t.MedicalLeave ?? 0)}<br>
-        WPL: ${escapeHtml(t.withoutPayLeave ?? t.WithoutPayLeave ?? 0)}<br>
-        Deduction: <b>${escapeHtml(deduction)}</b>
-        ${t.remarks ? `<br><span class="muted">${escapeHtml(t.remarks)}</span>` : ""}
-      </td>
-      <td>${statusBadge(status)}</td>
-      <td>
-        <button class="btn success" ${noPhotos || isApproved ? "disabled" : ""} onclick="approveTeacherAttendance('${jsString(employeeId)}')">Approve</button>
-        <button class="btn danger" ${isRejected ? "disabled" : ""} onclick="rejectTeacherAttendance('${jsString(employeeId)}')">Reject</button>
-      </td>
-    </tr>`;
-}
-
-function selectApproval(index) {
-  const item = (window.__approvalItems || [])[index];
-  if (!item) return;
-
-  state.selectedApproval = item;
-  const photos = item.photos || [];
-  const teachers = item.teachers || [];
-
-  $("approvalDetail").innerHTML = `
-    <h3>${escapeHtml(item.schoolCode)} — ${escapeHtml(item.month)}</h3>
-    <h4>Register Photos</h4>
-    <div class="photo-grid">
-      ${photos.length ? photos.map((u,i)=>`
-        <div class="photo-item">
-          <img src="${escapeHtml(driveThumbnailUrl(u, "w250"))}"
-               onclick="openPhoto('${jsString(driveImageUrl(u))}')"
-               onerror="this.style.display='none';">
-          <a class="btn" href="${escapeHtml(u)}" target="_blank">Open ${i+1}</a>
-        </div>`).join("") : `<div class="message bad">No register photos found. Approval disabled.</div>`}
-    </div>
-
-    <h4>Teacher-wise Attendance Approval</h4>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>S#</th>
-            <th>Employee ID</th>
-            <th>Name</th>
-            <th>Photo</th>
-            <th>Attendance</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${teachers.length ? teachers.map((t,i)=>renderApprovalTeacherRow(t, i, photos)).join("") : `<tr><td colspan="7">No teachers found.</td></tr>`}
-        </tbody>
-      </table>
-    </div>`;
-}
-
-async function approveTeacherAttendance(employeeId) {
-  const item = state.selectedApproval;
-  if (!item || !employeeId) return;
-
-  const result = await apiPost({
-    action: "approveAttendance",
-    email: state.user.email,
-    month: item.month,
-    schoolCode: item.schoolCode,
-    employeeId: employeeId
-  });
-
-  alert(result.message || (result.success ? "Approved" : "Approval failed"));
-  renderAttendanceApproval();
-}
-
-async function rejectTeacherAttendance(employeeId) {
-  const item = state.selectedApproval;
-  if (!item || !employeeId) return;
-
-  const reason = prompt("Reject reason is required:");
-  if (!reason) return;
-
-  const result = await apiPost({
-    action: "rejectAttendance",
-    email: state.user.email,
-    month: item.month,
-    schoolCode: item.schoolCode,
-    employeeId: employeeId,
-    reason: reason
-  });
-
-  alert(result.message || (result.success ? "Rejected" : "Reject failed"));
-  renderAttendanceApproval();
-}
-
-async function renderPayslips() {
-  setHeader("Payslips", "View and download teacher payslips in PDF");
-
-  if (isAdmin()) {
-    content.innerHTML = `
-      <div class="card">
-        <h3>Admin Payslips</h3>
-        <p class="muted">Admin payslip filter will be connected after Employee Management. Principal payslip PDF is active.</p>
-      </div>`;
-    return;
-  }
-
-  content.innerHTML = `<div class="card">Loading...</div>`;
-
-  try {
-    const rows = await loadPrincipalTeachers();
-
-    content.innerHTML = `
-      <div class="card">
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>S#</th>
-                <th>Employee ID</th>
-                <th>Name</th>
-                <th>Designation</th>
-                <th>Net Salary</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows.map((r,i)=>`
-                <tr>
-                  <td>${i+1}</td>
-                  <td>${escapeHtml(r.employeeId)}</td>
-                  <td>${escapeHtml(r.employeeName)}</td>
-                  <td>${escapeHtml(r.designation)}</td>
-                  <td><b>${money(r.netSalary)}</b></td>
-                  <td>
-                    <button class="btn primary" onclick="viewPayslip('${escapeHtml(r.employeeId)}')">View</button>
-                    <button class="btn success" onclick="downloadPayslipPdf('${escapeHtml(r.employeeId)}')">PDF</button>
-                  </td>
-                </tr>`).join("")}
-            </tbody>
-          </table>
-        </div>
-        <div id="payslipBox" style="margin-top:16px"></div>
-      </div>`;
-  } catch (err) {
-    content.innerHTML = showMessage(err.message, "bad");
-  }
-}
-
-async function viewPayslip(employeeId) {
-  const result = await apiGet("payslip", { email:state.user.email, month:getMonth(), employeeId });
-  if (!result.success) { alert(result.message || "Payslip not found"); return; }
-  const p = result.payslip;
-  $("payslipBox").innerHTML = `<div class="card"><h3>Payslip: ${escapeHtml(p.EmployeeName)}</h3><div class="table-wrap"><table><tbody><tr><th>Employee ID</th><td>${escapeHtml(p.EmployeeID)}</td></tr><tr><th>Designation</th><td>${escapeHtml(p.Designation)}</td></tr><tr><th>Basic Salary</th><td>${money(p.BasicSalary)}</td></tr><tr><th>Absent</th><td>${p.Absent}</td></tr><tr><th>CL</th><td>${p.CL}</td></tr><tr><th>Medical Leave</th><td>${p.MedicalLeave}</td></tr><tr><th>Without Pay Leave</th><td>${p.WithoutPayLeave}</td></tr><tr><th>Total Deduction Days</th><td>${p.TotalDeductionDays}</td></tr><tr><th>Deduction Amount</th><td>${money(p.DeductionAmount)}</td></tr><tr><th>Net Salary</th><td><b>${money(p.NetSalary)}</b></td></tr></tbody></table></div><div class="actions"><button class="btn success" onclick="downloadPayslipPdf('${escapeHtml(employeeId)}')">Download Payslip PDF</button></div></div>`;
-}
-
-async function renderSalarySheet() {
-  if (isAdmin()) {
-    setHeader("School Salary Sheets", "Download school-wise salary sheet PDF");
-    content.innerHTML = `<div class="card">Loading schools...</div>`;
-
-    try {
-      const result = await apiGet("dashboard", { email: state.user.email, month: getMonth() });
-      if (!result.success) {
-        content.innerHTML = showMessage(result.message || "School list loading failed.", "bad");
-        return;
-      }
-
-      const schools = result.schoolWise || [];
-      content.innerHTML = `
-        <div class="card">
-          <h3>School-wise Salary PDF</h3>
-          <p class="muted">Selected month: <b>${escapeHtml(getMonth())}</b></p>
-
-          <label>Select School</label>
-          <select id="pdfSchoolCode">
-            <option value="">-- Select School --</option>
-            ${schools.map(s => `<option value="${escapeHtml(s.schoolCode)}">${escapeHtml(s.schoolCode)} — Teachers: ${s.totalEmployees || 0} — Net: ${money(s.netSalary)}</option>`).join("")}
-          </select>
-
-          <div class="actions">
-            <button class="btn primary" onclick="downloadSchoolSalaryPdf()">Download School Salary PDF</button>
-          </div>
-          <div id="salaryPdfMsg"></div>
-        </div>`;
-    } catch (err) {
-      content.innerHTML = showMessage("School salary PDF screen loading failed.", "bad");
-    }
-    return;
-  }
-
-  setHeader("Salary Sheet", "Download my school salary sheet PDF");
-  content.innerHTML = `
-    <div class="card">
-      <h3>My School Salary Sheet PDF</h3>
-      <div class="summary-list">
-        <div class="summary-row"><span>Month</span><strong>${escapeHtml(getMonth())}</strong></div>
-        <div class="summary-row"><span>School Code</span><strong>${escapeHtml(state.user.schoolCode || "-")}</strong></div>
-      </div>
-      <div class="actions">
-        <button class="btn primary" onclick="downloadMySchoolSalaryPdf()">Download Salary Sheet PDF</button>
-      </div>
-      <div id="salaryPdfMsg"></div>
-    </div>`;
-}
-
-function renderCombinedReports() {
-  if (!isAdmin()) {
-    content.innerHTML = showMessage("Only Admin can access Combined Reports.", "bad");
-    return;
-  }
-
-  setHeader("Combined Reports", "Download full month salary report PDF for all schools");
-  content.innerHTML = `
-    <div class="card">
-      <h3>Combined Monthly Salary PDF</h3>
-      <div class="summary-list">
-        <div class="summary-row"><span>Month</span><strong>${escapeHtml(getMonth())}</strong></div>
-        <div class="summary-row"><span>Report Level</span><strong>All Schools Combined</strong></div>
-      </div>
-      <div class="actions">
-        <button class="btn success" onclick="downloadCombinedSalaryPdf()">Download Combined Monthly PDF</button>
-      </div>
-      <div id="combinedPdfMsg"></div>
-    </div>`;
-}
-
-function getPdfUrl(result) {
-  if (!result) return "";
-  return result.downloadUrl || result.pdfUrl || result.url || result.fileUrl || result.webViewLink || "";
-}
-
-function showPdfMessage(elementId, result, loadingText) {
-  const el = document.getElementById(elementId);
-  if (!el) return;
-
-  if (loadingText) {
-    el.innerHTML = showMessage(loadingText, "ok");
-    return;
-  }
-
-  const pdfUrl = getPdfUrl(result);
-
-  if (result && result.success) {
-    el.innerHTML = `
-      <div class="message ok">
-        ${escapeHtml(result.message || "PDF generated successfully.")}<br><br>
-        ${pdfUrl ? `<a class="btn success" href="${escapeHtml(pdfUrl)}" target="_blank" rel="noopener">Open / Download PDF</a>` : `<span class="muted">PDF generated, but download link was not returned.</span>`}
-      </div>
-    `;
-    return;
-  }
-
-  el.innerHTML = showMessage(
-    (result && result.message) ? result.message : "PDF generation failed.",
-    "bad"
-  );
-}
-
-async function downloadSchoolSalaryPdf() {
-  const schoolCode = String(document.getElementById("pdfSchoolCode")?.value || "").trim();
-  if (!schoolCode) {
-    alert("Please select school.");
-    return;
-  }
-
-  showPdfMessage("salaryPdfMsg", {}, "Generating school salary PDF...");
-  const result = await apiPost({
-    action: "generateSchoolSalaryPdf",
-    email: state.user.email,
-    month: getMonth(),
-    schoolCode: schoolCode
-  });
-
-  showPdfMessage("salaryPdfMsg", result);
-  const pdfUrl = getPdfUrl(result);
-  if (result.success && pdfUrl) window.open(pdfUrl, "_blank");
-}
-
-async function downloadMySchoolSalaryPdf() {
-  showPdfMessage("salaryPdfMsg", {}, "Generating salary sheet PDF...");
-  const result = await apiPost({
-    action: "generateSchoolSalaryPdf",
-    email: state.user.email,
-    month: getMonth(),
-    schoolCode: state.user.schoolCode
-  });
-
-  showPdfMessage("salaryPdfMsg", result);
-  const pdfUrl = getPdfUrl(result);
-  if (result.success && pdfUrl) window.open(pdfUrl, "_blank");
-}
-
-async function downloadCombinedSalaryPdf() {
-  showPdfMessage("combinedPdfMsg", {}, "Generating combined monthly PDF...");
-  const result = await apiPost({
-    action: "generateCombinedSalaryPdf",
-    email: state.user.email,
-    month: getMonth()
-  });
-
-  showPdfMessage("combinedPdfMsg", result);
-  const pdfUrl = getPdfUrl(result);
-  if (result.success && pdfUrl) window.open(pdfUrl, "_blank");
-}
-
-async function downloadPayslipPdf(employeeId) {
-  const result = await apiPost({
-    action: "generatePayslipPdf",
-    email: state.user.email,
-    month: getMonth(),
-    employeeId: employeeId
-  });
-
-  if (result.success && result.url) {
-    const box = document.getElementById("payslipBox");
-    if (box) {
-      box.insertAdjacentHTML("beforeend", `
-        <div class="message ok">
-          ${escapeHtml(result.message || "Payslip PDF generated successfully.")}<br><br>
-          <a class="btn success" href="${escapeHtml(result.url)}" target="_blank" rel="noopener">
-            Open / Download Payslip PDF
-          </a>
-        </div>
-      `);
-    }
-    window.open(result.url, "_blank");
-  } else {
-    alert(result.message || "Payslip PDF generation failed.");
-  }
-}
-
-function renderSalaryGeneration() {
-  setHeader("Salary Generation", "Generate salary only after attendance approval");
-  content.innerHTML = `<div class="card"><p>Salary generation API exists. Next step: add pre-check for pending attendance before Generate Salary.</p><button class="btn primary" onclick="generateSalaryNow()">Generate Salary for ${escapeHtml(getMonth())}</button><div id="salaryGenMsg"></div></div>`;
-}
-
-async function generateSalaryNow() {
-  if (!confirm("Generate salary for selected month?")) return;
-  const result = await apiPost({ action:"generateSalary", email:state.user.email, month:getMonth() });
-  $("salaryGenMsg").innerHTML = showMessage(result.message || JSON.stringify(result), result.success ? "ok" : "bad");
-}
-
-function openPhoto(url) {
-  $("modalImage").src = url;
-  $("photoModal").classList.remove("hidden");
-}
-
-window.onload = async () => {
-  const saved = localStorage.getItem("ibfs_user");
-  if (saved) {
-    state.user = JSON.parse(saved);
-    renderAfterLogin();
-    return;
-  }
-  await loginWithPortalToken();
-};
-
-  </script>
+  <!-- App Logic -->
+  <script src="app.js" defer></script>
 </body>
 </html>
-
