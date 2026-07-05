@@ -106,6 +106,8 @@ const state = {
   expandedCards: {}
 };
 
+const MONTH_STORAGE_KEY = "ibfs_selected_month_v2";
+
 // ==========================================================================
 // Helper Utility Functions
 // ==========================================================================
@@ -122,7 +124,17 @@ const isSchoolAssigned = (code) => {
   return schools.includes(String(code).trim().toLowerCase());
 };
 const month = () => $("globalMonth")?.value || currentMonth();
-const currentMonth = () => new Date().toISOString().slice(0, 7);
+function currentMonth() {
+  const saved = localStorage.getItem(MONTH_STORAGE_KEY);
+  if (/^\d{4}-(0[1-9]|1[0-2])$/.test(saved || "")) return saved;
+
+  const today = new Date();
+  const payrollDate = new Date(today.getFullYear(), today.getMonth(), 1);
+  if (today.getDate() <= 10) payrollDate.setMonth(payrollDate.getMonth() - 1);
+  const fallback = `${payrollDate.getFullYear()}-${String(payrollDate.getMonth() + 1).padStart(2, "0")}`;
+  localStorage.setItem(MONTH_STORAGE_KEY, fallback);
+  return fallback;
+}
 const msg = (t, type = "") => `<div class="message ${type}">${esc(t)}</div>`;
 const setTitle = (t, s) => { 
   if ($("title")) $("title").textContent = t; 
@@ -267,7 +279,11 @@ document.addEventListener("DOMContentLoaded", () => {
   
   if ($("globalMonth")) {
     $("globalMonth").value = currentMonth();
-    $("globalMonth").onchange = () => { state.cache = {}; renderPage(); };
+    $("globalMonth").onchange = () => {
+      localStorage.setItem(MONTH_STORAGE_KEY, $("globalMonth").value);
+      state.cache = {};
+      renderPage();
+    };
   }
   
   if ($("loginForm")) {
@@ -937,6 +953,10 @@ function logout() {
 }
 
 function afterLogin() {
+  if (!state.user.schoolCode && state.user.SchoolCode) {
+    state.user.schoolCode = state.user.SchoolCode;
+  }
+  
   $("loginView").classList.add("hidden"); 
   $("app").classList.remove("hidden");
   
@@ -3556,8 +3576,9 @@ function pdfUrl(r) {
     if(/^https?:\/\//i.test(r)) return r;
     try { return pdfUrl(JSON.parse(r)); } catch(e) { return ""; }
   }
-  if(r.base64) {
-    return getBase64BlobUrl(r.base64, r.mimeType || "application/pdf");
+  const b64 = r.base64 || r.pdfBase64 || r.fileBase64 || r.contentBase64 || r.pdfBytes;
+  if(b64) {
+    return getBase64BlobUrl(b64, r.mimeType || "application/pdf");
   }
   const direct = r.downloadUrl || r.pdfUrl || r.pdfLink || r.url || r.link ||
     r.fileUrl || r.driveUrl || r.viewUrl || r.webViewLink || r.downloadLink;
@@ -3694,7 +3715,7 @@ async function payslips() {
             </thead>
             <tbody>
               ${rows.map((r, i) => {
-                const empId = String(r.employeeId).trim();
+                const empId = String(r.employeeId || r.EmployeeID || r.empId || r.id || "").trim();
                 return `
                 <tr>
                   <td data-label="S#">${i + 1}</td>
@@ -3726,7 +3747,7 @@ async function viewPayslip(employeeId) {
   try {
     const r = await apiGet("payslip", { email: state.user.email, month: month(), employeeId }, false);
     if (!r.success) {
-      openGeneralModal(msg(r.message || "Failed to load payslip data.", "bad"));
+      openGeneralModal(msg((r.message || "Failed to load payslip data.") + ` Selected month: ${month()}.`, "bad"));
       return;
     }
     
@@ -3760,12 +3781,15 @@ async function downloadPayslip(employeeId) {
     const r = await apiPost({ action: "generatePayslipPdf", email: state.user.email, month: month(), employeeId });
     const url = pdfUrl(r);
     if (r.success && url) {
-      forceDownload(url);
+      forceDownload(url, r.fileName || `IBFS_Payslip_${employeeId}_${month()}.pdf`);
+      toastSuccess("Payslip PDF is ready.", "Downloaded");
     } else {
-      r.success !== false ? toastSuccess(r.message || "Payslip ready.") : toastError(r.message || "Payslip PDF generation failed.");
+      r.success !== false
+        ? toastSuccess(r.message || "Payslip ready.")
+        : toastError((r.message || "Payslip PDF generation failed.") + ` Selected month: ${month()}.`);
     }
   } catch(e) {
-    toastError("API error generating payslip PDF.", "Error");
+    toastError("API error generating payslip PDF. Selected month: " + month(), "Error");
   }
 }
 
