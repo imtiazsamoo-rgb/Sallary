@@ -2073,7 +2073,7 @@ function renderAttendanceStep() {
         </div>
       </div>
       <div class="form-group" style="max-width: 350px; margin-bottom: 20px;">
-        <input id="photos" type="file" accept="image/*" multiple>
+        <input id="photos" type="file" accept="image/*">
       </div>
       <div class="photo-grid">
         ${state.attendance.photos.map((p, i) => `
