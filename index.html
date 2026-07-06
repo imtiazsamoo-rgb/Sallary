@@ -3394,15 +3394,27 @@ async function dashboard() {
     let attStatusText = "Loading status...";
     let staffCountText = "";
     try {
-      const dbResult = await apiGet("dashboard", { email: state.user.email, month: month() });
+      let dbResult = { success: false };
+      try { dbResult = await apiGet("dashboard", { email: state.user.email, month: month() }); } catch(e) {}
       
       if (dbResult.success && dbResult.cards && dbResult.cards.schoolCode && !state.user.schoolCode) {
         state.user.schoolCode = dbResult.cards.schoolCode;
-        sessionStorage.setItem("ibfs_user", JSON.stringify(state.user));
       }
 
       const staffList = await loadTeachers();
       
+      // Fallback: If still no school code, extract it from the loaded teachers!
+      if (!state.user.schoolCode && staffList && staffList.length > 0) {
+        state.user.schoolCode = staffList[0].schoolCode || staffList[0].SchoolCode || "";
+      }
+      
+      // Save it and update the UI headers
+      if (state.user.schoolCode) {
+        sessionStorage.setItem("ibfs_user", JSON.stringify(state.user));
+        $("sideMeta").textContent = `${state.user.role.toUpperCase()} • ${state.user.schoolCode}`;
+        $("schoolPill").textContent = `🏫 ${state.user.schoolCode}`;
+      }
+
       if (dbResult.success) {
         const s = String(dbResult.cards?.attendanceStatus || "Not Submitted").toLowerCase();
         const displayStatus = dbResult.cards?.attendanceStatus || "Not Submitted";
@@ -4640,12 +4652,15 @@ function rawFile(file) {
 
 function compressImage(file) {
   return new Promise((resolve, reject) => {
-    const img = new Image();
     const imgUrl = URL.createObjectURL(file);
+    const img = new Image();
+    
+    // Fallback to raw file if image fails to load
     img.onerror = () => {
       URL.revokeObjectURL(imgUrl);
-      reject(new Error("Failed to read image structure. File may be corrupted or unsupported."));
+      rawFile(file).then(resolve).catch(reject);
     };
+    
     img.onload = () => {
       try {
         URL.revokeObjectURL(imgUrl);
@@ -4655,7 +4670,15 @@ function compressImage(file) {
         canvas.height = Math.max(1, Math.round(img.height * scale));
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL("image/jpeg", CONFIG.jpegQuality);
+        
+        let dataUrl = canvas.toDataURL("image/jpeg", CONFIG.jpegQuality);
+        
+        // If Canvas is tainted or blocked (returns empty or data:,), fallback to raw file
+        if (!dataUrl || dataUrl === "data:," || dataUrl.length < 100) {
+          rawFile(file).then(resolve).catch(reject);
+          return;
+        }
+
         resolve({
           fileName: file.name.replace(/\.[^.]+$/, "") + ".jpg",
           mimeType: "image/jpeg",
@@ -4663,7 +4686,8 @@ function compressImage(file) {
           base64: dataUrl.split(",")[1] || ""
         });
       } catch (err) {
-        reject(err);
+        // Fallback to raw file if Canvas throws a SecurityError
+        rawFile(file).then(resolve).catch(reject);
       }
     };
     img.src = imgUrl;
